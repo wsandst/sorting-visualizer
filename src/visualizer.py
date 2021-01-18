@@ -5,14 +5,11 @@ from PyQt5.QtGui import QImage
 import random
 
 def list_to_bar_image(lst, size=400) -> QImage:
-
-    lst = [random.randrange(1, 100) for i in range(50)]
-
     image = Image.new('RGB', (size,size), (0, 0, 0, 0))
     draw = ImageDraw.Draw(image)
 
     bar_width = size / len(lst)
-    y_step_size = 400 / max(lst)
+    y_step_size = 400 / lst.max
     x = 0
     for num in lst:
         draw.rectangle((x,size, x + bar_width, size-y_step_size*num), fill= 'white')

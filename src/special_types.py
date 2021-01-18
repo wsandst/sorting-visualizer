@@ -7,7 +7,7 @@ import threading
 cmp_cnt_by_thread = dict()
 thread_locks = dict()
 cmp_lock_counter = 0
-cmp_before_lock = 10
+cmp_before_lock = 1
 
 class SInt(int):
     pass
@@ -47,6 +47,12 @@ class SList(list):
         self.write_cnt = 0
         self.last_read_key = 0
         self.last_write_key = 0
+
+        if len(args) > 0:
+            lst = list(args[0])
+            lst = [int(i) for i in lst]
+            self.max = max(lst)
+
         super().__init__(*args, **kwargs)
     
     def __getitem__(self, key):
