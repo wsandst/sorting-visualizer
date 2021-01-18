@@ -48,8 +48,6 @@ def bubble_sort_of_doom(lst):
                 last_change_index = i
         max_index = last_change_index
 
-#class SortingContext():
-
 def display_info(algo):
     print(f'{algo.name}:')
     print(algo.lst)
@@ -57,14 +55,7 @@ def display_info(algo):
     print(f'read:  {algo.lst.read_cnt}')
     print(f'write: {algo.lst.write_cnt}')
 
-def main():
-    lst = SList()
-    lst.randomize(25, 100)
-
-
-    sorting_algos = [SortingAlgorithm(bubble_sort, "Bubble Sort", lst),
-                    SortingAlgorithm(bubble_sort_of_doom, "Bubble Sort of Doom", lst)]
-
+def run_sorting(sorting_algos):
     for algo in sorting_algos:
         algo.run()
 
@@ -81,7 +72,17 @@ def main():
         if not any_thread_alive:
             break
 
-    #application = gui.MainApplication()
+def main():
+    lst = SList()
+    lst.randomize(25, 100)
+
+
+    sorting_algos = [SortingAlgorithm(bubble_sort, "Bubble Sort", lst),
+                    SortingAlgorithm(bubble_sort_of_doom, "Bubble Sort of Doom", lst)]
+
+    application = gui.MainApplication()
+
+    #run_sorting(sorting_algos)
     
 if __name__ == "__main__":
     main()
