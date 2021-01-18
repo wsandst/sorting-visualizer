@@ -1,18 +1,35 @@
 """ Implements a custom Int and List class which keeps track of various usage statistics"""
 
 import random
+import time
+import threading
 
-comparison_cnt = 0
-read_cnt = 0
-write_cnt = 0
+cmp_cnt_by_thread = dict()
+thread_locks = dict()
+cmp_lock_counter = 0
+cmp_before_lock = 10
 
 class SInt(int):
     pass
 
 def inc_cmp_cnt(func):
     def inner(*args, **kwargs):
-        global comparison_cnt
-        comparison_cnt = comparison_cnt + 1
+        global cmp_cnt_by_thread
+        global thread_locks
+        global cmp_lock_counter
+
+        cmp_cnt_by_thread.setdefault(threading.get_ident(), 0)
+        cmp_cnt_by_thread[threading.get_ident()] += 1
+        
+        # Handle thread locking if exceeding comparisons
+        cmp_lock_counter = cmp_lock_counter + 1
+        if cmp_lock_counter >= cmp_before_lock:
+            cmp_lock_counter = 0
+            thread_locks[threading.get_ident()] = True
+            # Wait until main thread unlocks this thread
+            while thread_locks[threading.get_ident()]:        
+                time.sleep(0.000001)
+
         return func(*args, **kwargs)
     return inner
 
@@ -43,6 +60,7 @@ class SList(list):
         return super().__setitem__(key, value)
 
     def randomize(self, size, upper_bound, lower_bound=1):
-        self.__init__([SInt(random.randrange(lower_bound, upper_bound)) for i in range(size)])
+        random.seed(783248976)
+        self.__init__([SInt(random.randrange(lower_bound, upper_bound+1)) for i in range(size)])
 
 setup_custom_int()
