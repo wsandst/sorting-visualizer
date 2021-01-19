@@ -9,6 +9,7 @@ from PyQt5 import QtCore
 import sys
 import visualizer
 import sorting
+import time
 
 
 class MainWindow(QWidget):
@@ -27,40 +28,37 @@ class MainWindow(QWidget):
 
         self.sorting_algos = sorting_algos
 
-        self.update_image(self.sorting_algos[0].lst)
+        self.generate_sorting_image(self.sorting_algos[0].lst, self.sorting_algos[0].get_coloring())
 
         self.checkThreadTimer = QtCore.QTimer(self)
-        self.checkThreadTimer.setInterval(500) #.5 seconds
+        self.checkThreadTimer.setInterval(20) #.5 seconds
 
         self.checkThreadTimer.timeout.connect(self.sorting_timeout)
         self.checkThreadTimer.start()
 
         sorting.start_sorting(self.sorting_algos)
 
-    def update_image(self, lst):
-        q_image = visualizer.list_to_bar_image(lst)
+    def sorting_timeout(self):
+        start = time.time()
+
+        sorting.run_sorting_step(self.sorting_algos)
+        self.render_sorting()
+
+        elapsed = time.time() - start
+        print(f'Frame took {elapsed}s')
+    
+
+    def render_sorting(self):
+        for algo in self.sorting_algos:
+            if algo.thread.is_alive():
+                self.generate_sorting_image(algo.lst, algo.get_coloring())
+                algo.unlock()
+
+    def generate_sorting_image(self, lst, colors):
+        q_image = visualizer.list_to_bar_image(lst, colors)
         pixmap = QPixmap.fromImage(q_image)
         #pixmap = pixmap.scaled(400, 400)
         self.image_label.setPixmap(pixmap)
-
-    def sorting_timeout(self):
-        print("Updating image")
-        self.run_sorting_one_step(self.sorting_algos)
-
-    def run_sorting_one_step(self, sorting_algos):
-        any_thread_alive = False
-        for algo in sorting_algos:
-            if not algo.is_thread_locked():
-                return False
-            any_thread_alive = any_thread_alive or algo.thread.is_alive()
-        if not any_thread_alive:
-            return False
-            
-        print("Running algos")
-        for algo in sorting_algos:
-            if algo.thread.is_alive():
-                self.update_image(algo.lst)
-                algo.unlock()
 
 
 class MainApplication(QApplication):

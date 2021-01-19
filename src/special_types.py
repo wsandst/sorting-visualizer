@@ -7,7 +7,7 @@ import threading
 cmp_cnt_by_thread = dict()
 thread_locks = dict()
 cmp_lock_counter = 0
-cmp_before_lock = 1
+cmp_before_lock = 20
 
 class SInt(int):
     pass
@@ -45,8 +45,8 @@ class SList(list):
     def __init__(self, *args, **kwargs):
         self.read_cnt = 0
         self.write_cnt = 0
-        self.last_read_key = 0
-        self.last_write_key = 0
+        self.last_read_key = -1
+        self.last_write_key = -1
 
         if len(args) > 0:
             lst = list(args[0])
@@ -68,5 +68,11 @@ class SList(list):
     def randomize(self, size, upper_bound, lower_bound=1):
         random.seed(783248976)
         self.__init__([SInt(random.randrange(lower_bound, upper_bound+1)) for i in range(size)])
+
+    def randomize_linear(self, size, lower_bound=1):
+        random.seed(783248976)
+        lst = [lower_bound+i for i in range(size)]
+        random.shuffle(lst)
+        self.__init__([SInt(i) for i in lst])
 
 setup_custom_int()
