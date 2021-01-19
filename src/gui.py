@@ -2,7 +2,7 @@
 
 from PIL.ImageQt import ImageQt
 from PyQt5.QtCore import pyqtSignal, Qt, QTimer
-from PyQt5.QtWidgets import QWidget, QApplication, QLabel, QHBoxLayout, QVBoxLayout, QPushButton, QProgressBar, QSpinBox, QDoubleSpinBox, QFrame, QGridLayout, QRadioButton
+from PyQt5.QtWidgets import QWidget, QApplication, QLabel, QHBoxLayout, QVBoxLayout, QPushButton, QProgressBar, QSpinBox, QDoubleSpinBox, QFrame, QGridLayout, QRadioButton, QAction
 from PyQt5.QtGui import QIcon, QPixmap, QFont, QImage
 from PyQt5 import QtCore
 
@@ -55,7 +55,7 @@ class MainWindow(QWidget):
                 algo.unlock()
 
     def generate_sorting_image(self, lst, colors):
-        q_image = visualizer.list_to_bar_image(lst, colors)
+        q_image = visualizer.list_to_bar_image(lst, colors, padding=2)
         pixmap = QPixmap.fromImage(q_image)
         #pixmap = pixmap.scaled(400, 400)
         self.image_label.setPixmap(pixmap)
