@@ -2,9 +2,10 @@ import gui
 from sorting import *
 from special_types import SList
 
+
 def main():
     lst = SList()
-    lst.randomize_linear(100)
+    lst.randomize_linear(400)
 
     sorting_algos = [SortingAlgorithm(bubble_sort, "Bubble Sort", lst)]
                     #SortingAlgorithm(bubble_sort_of_doom, "Bubble Sort of Doom", lst)]

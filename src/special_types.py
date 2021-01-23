@@ -7,7 +7,7 @@ import threading
 cmp_cnt_by_thread = dict()
 thread_locks = dict()
 cmp_lock_counter = 0
-cmp_before_lock = 20
+cmp_before_lock = 200
 
 class SInt(int):
     pass

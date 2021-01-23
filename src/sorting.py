@@ -41,7 +41,10 @@ class SortingAlgorithm():
         return special_types.cmp_cnt_by_thread[self.thread.ident]
 
     def is_thread_locked(self):
-        return special_types.thread_locks[self.thread.ident]
+        if self.thread.ident in special_types.thread_locks:
+            return special_types.thread_locks[self.thread.ident]
+        else:
+            return False
 
     def unlock(self):
         special_types.thread_locks[self.thread.ident] = False
