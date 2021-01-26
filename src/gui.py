@@ -3,7 +3,7 @@
 from PIL.ImageQt import ImageQt
 from PyQt5.QtCore import pyqtSignal, Qt, QTimer
 from PyQt5.QtWidgets import QWidget, QApplication, QLabel, QHBoxLayout, QVBoxLayout, QPushButton, QProgressBar, QSpinBox, QDoubleSpinBox, QFrame, QGridLayout, QRadioButton, QAction, QSizePolicy
-from PyQt5.QtGui import QIcon, QPixmap, QFont, QImage
+from PyQt5.QtGui import QIcon, QPixmap, QFont, QImage, QFontDatabase
 from PyQt5 import QtCore
 
 import sys
@@ -18,7 +18,7 @@ class SortingWidget(QWidget):
         self.sorting_algo = sorting_algo
         self.layout = QVBoxLayout(self)
         self.layout.addStretch(1)
-        self.layout.setContentsMargins(0,0,0,0)
+        self.layout.setContentsMargins(10,0,10,0)
 
         self.name_label = QLabel()
         self.name_label.setText(sorting_algo.name)
@@ -28,16 +28,24 @@ class SortingWidget(QWidget):
         self.metadata_label.setText("comparisons: 0 reads: 0 writes: 0")
         self.metadata_label.setAlignment(QtCore.Qt.AlignCenter)
 
-        self.setSizePolicy(
-            QSizePolicy.MinimumExpanding,
-            QSizePolicy.MinimumExpanding
-        )
+        #self.setSizePolicy(
+        #    QSizePolicy.MinimumExpanding,
+        #    QSizePolicy.MinimumExpanding
+        #)
 
         # Sorting bitmap
         self.image_label = QLabel(self)
+        self.image_label.setAlignment(QtCore.Qt.AlignCenter)
+
         self.layout.addWidget(self.name_label)
         self.layout.addWidget(self.metadata_label)
         self.layout.addWidget(self.image_label)
+
+        # Setup correct fonts
+        medium_font = QFont("Inter", 12)
+        small_font = QFont("Inter", 10)
+        self.name_label.setFont(medium_font)
+        self.metadata_label.setFont(small_font)
 
 
     def render_image(self):
@@ -53,7 +61,7 @@ class SortingWidget(QWidget):
             self.update()
 
     def update_sorting_metadata(self):
-        new_text = f'comparisons: {self.sorting_algo.get_comparisons()} reads: {self.sorting_algo.get_reads()} writes: {self.sorting_algo.get_writes()}'
+        new_text = f'cmps: {self.sorting_algo.get_comparisons()} \t reads: {self.sorting_algo.get_reads()} \t writes: {self.sorting_algo.get_writes()}'
         self.metadata_label.setText(new_text)
 
 
@@ -66,13 +74,19 @@ class MainWindow(QWidget):
         #self.setFixedSize(825, 590)
         self.setStyleSheet("background-color: #181818; color: white")
 
-        self.layout = QHBoxLayout(self)
+        # Setup custom font
+        font_db = QFontDatabase()
+        font_id = font_db.addApplicationFont("../assets/Inter-Regular.ttf")
+        #print(QFontDatabase.applicationFontFamilies(font_id))
+
+        self.layout = QGridLayout(self)
+        self.layout.setGeometry
 
         self.sorting_widgets = []
 
-        for algo in sorting_algos:
+        for i, algo in enumerate(sorting_algos):
             sorting_widget = SortingWidget(self, algo)
-            self.layout.addWidget(sorting_widget)
+            self.layout.addWidget(sorting_widget, i // 3, i % 3)
             self.sorting_widgets.append(sorting_widget)
 
 
