@@ -40,6 +40,12 @@ class SortingAlgorithm():
     def get_comparisons(self):
         return special_types.cmp_cnt_by_thread[self.thread.ident]
 
+    def get_reads(self):
+        return self.lst.read_cnt
+
+    def get_writes(self):
+        return self.lst.write_cnt
+
     def is_thread_locked(self):
         if self.thread.ident in special_types.thread_locks:
             return special_types.thread_locks[self.thread.ident]
