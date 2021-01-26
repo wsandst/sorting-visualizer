@@ -13,10 +13,13 @@ import threading
 # Dictionaries which hold thread related info, such as locks
 # They are indexed by the thread id. These have to be global to allow communication
 # Between the Int Cmp function and the rest of the program
-cmp_cnt_by_thread = dict()
-thread_locks = dict()
-cmp_lock_counter = 0
-cmp_before_lock = 20
+
+# Avoiding globals
+class ThreadManagment:
+    cmp_cnt_by_thread = dict()
+    thread_locks = dict()
+    cmp_lock_counter = 0
+    cmp_before_lock = 1
 
 class SInt(int):
     """ Custom Int class. All custom functionality is created through decorators in setup_custom_int """
@@ -25,20 +28,16 @@ class SInt(int):
 def inc_cmp_cnt(func):
     """ Decorator for incrementing the comparison counter and handle thread locking """
     def inner(*args, **kwargs):
-        global cmp_cnt_by_thread
-        global thread_locks
-        global cmp_lock_counter
-
-        cmp_cnt_by_thread.setdefault(threading.get_ident(), 0)
-        cmp_cnt_by_thread[threading.get_ident()] += 1
+        ThreadManagment.cmp_cnt_by_thread.setdefault(threading.get_ident(), 0)
+        ThreadManagment.cmp_cnt_by_thread[threading.get_ident()] += 1
         
         # Handle thread locking if exceeding comparisons
-        cmp_lock_counter = cmp_lock_counter + 1
-        if cmp_lock_counter >= cmp_before_lock:
+        cmp_lock_counter = ThreadManagment.cmp_lock_counter + 1
+        if cmp_lock_counter >= ThreadManagment.cmp_before_lock:
             cmp_lock_counter = 0
-            thread_locks[threading.get_ident()] = True
+            ThreadManagment.thread_locks[threading.get_ident()] = True
             # Wait until main thread unlocks this thread
-            while thread_locks[threading.get_ident()]:        
+            while ThreadManagment.thread_locks[threading.get_ident()]:        
                 # Sleep for a short time to improve multithreaded performance by releasing GIL
                 time.sleep(0.000001)
 

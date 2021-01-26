@@ -1,5 +1,5 @@
 import special_types
-from special_types import SInt, SList
+from special_types import SInt, SList, ThreadManagment
 
 import threading
 
@@ -19,7 +19,7 @@ class SortingAlgorithm():
         self.sorting_active = True
 
     def get_comparisons(self):
-        return special_types.cmp_cnt_by_thread[self.thread.ident]
+        return ThreadManagment.cmp_cnt_by_thread.get(self.thread.ident, 0)
 
     def get_reads(self):
         return self.lst.read_cnt
@@ -36,13 +36,13 @@ class SortingAlgorithm():
             return False
 
     def is_thread_locked(self):
-        if self.thread.ident in special_types.thread_locks:
-            return special_types.thread_locks[self.thread.ident]
+        if self.thread.ident in ThreadManagment.thread_locks:
+            return ThreadManagment.thread_locks[self.thread.ident]
         else:
             return False
 
     def unlock(self):
-        special_types.thread_locks[self.thread.ident] = False
+        ThreadManagment.thread_locks[self.thread.ident] = False
 
     def get_coloring(self):
         """ Return an array representing coloring of specific indices """
