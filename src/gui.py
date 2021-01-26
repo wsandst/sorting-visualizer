@@ -42,7 +42,7 @@ class SortingWidget(QWidget):
 
     def render_image(self):
         """ Generate an image of a sorting list """
-        if self.sorting_algo.thread.is_alive(): # No point in rendering once the algorithm is done
+        if self.sorting_algo.requires_rendering(): # No point in rendering if not needed
             # Render image
             q_image = visualizer.list_to_bar_image(self.sorting_algo.lst, self.sorting_algo.get_coloring(), padding=2)
             pixmap = QPixmap.fromImage(q_image)
@@ -99,10 +99,10 @@ class MainWindow(QWidget):
         if self.last_frame == None:
             self.last_frame = time.time()
 
-        # Run sorting algorithms one step
-        sorting.run_sorting_step(self.sorting_algos)
         # Render the lists that are being sorted
-        self.render_sorting()
+        # Only render a frame if the sorting step is complete
+        if sorting.is_sorting_step_complete(self.sorting_algos):
+            self.render_sorting()
 
         # Calculate FPS and print it
         end = time.time()
@@ -113,7 +113,7 @@ class MainWindow(QWidget):
         if self.frame_counter % self.fps_update_freq == 0:
             print(f'FPS: {self.fps_update_freq/self.frame_time_sum} ({1000*self.frame_time_sum/self.fps_update_freq}ms)')
             self.frame_time_sum = 0
-    
+        
 
     def render_sorting(self):
         """ Render images of all the lists being sorted """

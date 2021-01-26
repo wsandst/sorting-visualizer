@@ -12,9 +12,11 @@ class SortingAlgorithm():
         self.thread = threading.Thread(target = func, args = (self.lst,))
         self.thread.daemon = True
         self.name = name
+        self.sorting_active = False
     
     def run(self):
         self.thread.start()
+        self.sorting_active = True
 
     def get_comparisons(self):
         return special_types.cmp_cnt_by_thread[self.thread.ident]
@@ -24,6 +26,14 @@ class SortingAlgorithm():
 
     def get_writes(self):
         return self.lst.write_cnt
+
+    def requires_rendering(self):
+        if self.sorting_active: 
+            # This is to ensure the last frame when the thread is complete is still rendered
+            self.sorting_active = self.thread.is_alive()
+            return True
+        else:
+            return False
 
     def is_thread_locked(self):
         if self.thread.ident in special_types.thread_locks:
@@ -49,12 +59,10 @@ def start_sorting(sorting_algos):
     for algo in sorting_algos:
         algo.run()
 
-def run_sorting_step(sorting_algos):
-    """ Run sorting for x comparisons, then lock the thread as defined in special_types """
-    any_thread_alive = False
+def is_sorting_step_complete(sorting_algos):
+    """ Is the sorting step complete for all threads? """
     for algo in sorting_algos:
-        if not algo.is_thread_locked():
+        if not algo.is_thread_locked() and algo.thread.is_alive():
+            # At least one algorithm is still running and is not locked, ie not done
             return False
-        any_thread_alive = any_thread_alive or algo.thread.is_alive()
-    if not any_thread_alive:
-        return False
+    return True

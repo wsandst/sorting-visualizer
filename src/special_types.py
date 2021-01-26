@@ -16,7 +16,7 @@ import threading
 cmp_cnt_by_thread = dict()
 thread_locks = dict()
 cmp_lock_counter = 0
-cmp_before_lock = 1
+cmp_before_lock = 20
 
 class SInt(int):
     """ Custom Int class. All custom functionality is created through decorators in setup_custom_int """
