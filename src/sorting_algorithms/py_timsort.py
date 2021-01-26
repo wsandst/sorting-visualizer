@@ -18,24 +18,31 @@ class CounterWrapper:
 
 def custom_cmp(lhs, rhs):
     if CounterWrapper.cmp_counter >= CounterWrapper.cmp_limit:
-        raise TimBreak
+        raise TimBreak # Interupt if counter exceeded
     CounterWrapper.cmp_counter += 1
     return lhs - rhs
 
 def timsort(lst, ThreadManagment):
-    """ This is a special type of sort, need to do some weird stuff """
+    """ 
+    This is a special type of sort, in order to track list.sort() 
+    sort() is stopped after a set amount of comparisons using exceptions.
+    By successively increasing this limit and resetting the list every time,
+    we can inspect the state of the list after every comparison for visualization
+    """
     lst.__init__([int(i) for i in lst]) # Remove the custom int class from the list to prevent standard behaviour
 
     orig_list = lst.copy()
     while True:
         CounterWrapper.cmp_counter = 0
         CounterWrapper.cmp_limit += ThreadManagment.cmp_before_lock # Do x more comparisons next run
+        ThreadManagment.cmp_cnt_by_thread[threading.get_ident()] = CounterWrapper.cmp_limit
         lst.__init__(orig_list.copy()) # Reset list to unsorted state
         try:
-            lst.sort(key=cmp_to_key(custom_cmp))
+            lst.sort(key=cmp_to_key(custom_cmp)) # Sort list using custom compare function
         except TimBreak:
             wait_for_thread_unlock(ThreadManagment.thread_locks) # Lock thread after exception to allow for GUI update
         else:
+            # No exception raised -> no comparisons -> list sorted, we are done
             break
 
 def wait_for_thread_unlock(thread_locks):

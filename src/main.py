@@ -9,7 +9,7 @@ def main():
     lst.shuffle_linear(100)
     # Init all the sorting algorithms
     sorting_algos = [SortingAlgorithm(bubble_sort.bubble_sort, "Bubble Sort", lst),
-                    SortingAlgorithm(lambda x: py_timsort.timsort(x, ThreadManagment), "Pythons TimSort", lst),
+                    SortingAlgorithm(lambda x: py_timsort.timsort(x, ThreadManagment), "Python TimSort", lst),
                     SortingAlgorithm(bubble_sort_of_doom.bubble_sort_of_doom, "Bubble Sort of Doom", lst),
                     SortingAlgorithm(cocktail_sort_of_doom.cocktail_sort, "Cocktail Sort of Doom", lst)]
 

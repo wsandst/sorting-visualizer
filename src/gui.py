@@ -80,9 +80,11 @@ class MainWindow(QWidget):
         #print(QFontDatabase.applicationFontFamilies(font_id))
 
         self.layout = QGridLayout(self)
-        self.layout.setGeometry
+        self.layout.setAlignment(Qt.AlignHCenter)
 
         self.sorting_widgets = []
+
+        #self.layout.setRowStretch(1,1)
 
         for i, algo in enumerate(sorting_algos):
             sorting_widget = SortingWidget(self, algo)
@@ -108,6 +110,11 @@ class MainWindow(QWidget):
         self.renderSorting.timeout.connect(self.render_timeout)
         self.renderSorting.start()
 
+        # Render one frame
+        self.running_sorting = False
+        self.first_frame = True
+
+
     def render_timeout(self):
         """ Run a step of sorting algorithms and then render them to their images """
         if self.last_frame == None:
@@ -115,7 +122,7 @@ class MainWindow(QWidget):
 
         # Render the lists that are being sorted
         # Only render a frame if the sorting step is complete
-        if sorting.is_sorting_step_complete(self.sorting_algos):
+        if (self.running_sorting or self.first_frame) and sorting.is_sorting_step_complete(self.sorting_algos):
             self.render_sorting()
 
         # Calculate FPS and print it
@@ -131,11 +138,15 @@ class MainWindow(QWidget):
 
     def render_sorting(self):
         """ Render images of all the lists being sorted """
+        self.first_frame = False
         for widget in self.sorting_widgets:
             widget.render_image()
             # Unlock thread to allow another step of sorting
             widget.sorting_algo.unlock()
 
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_Return or event.key() == Qt.Key_Space:
+            self.running_sorting = not self.running_sorting
 
 
 class MainApplication(QApplication):
