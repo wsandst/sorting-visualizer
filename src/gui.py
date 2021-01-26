@@ -12,6 +12,7 @@ import sorting
 import time
 
 class SortingWidget(QWidget):
+    """ A widget displaying a sorting algorithm and related info """
     def __init__(self, parent, sorting_algo):
         QWidget.__init__(self, parent=parent)
         self.sorting_algo = sorting_algo
@@ -32,13 +33,12 @@ class SortingWidget(QWidget):
             QSizePolicy.MinimumExpanding
         )
 
+        # Sorting bitmap
         self.image_label = QLabel(self)
         self.layout.addWidget(self.name_label)
         self.layout.addWidget(self.metadata_label)
         self.layout.addWidget(self.image_label)
 
-    #def sizeHint(self):
-        #return QtCore.QSize(400,400)
 
     def render_image(self):
         """ Generate an image of a sorting list """
@@ -55,6 +55,7 @@ class SortingWidget(QWidget):
     def update_sorting_metadata(self):
         new_text = f'comparisons: {self.sorting_algo.get_comparisons()} reads: {self.sorting_algo.get_reads()} writes: {self.sorting_algo.get_writes()}'
         self.metadata_label.setText(new_text)
+
 
 class MainWindow(QWidget):
     def __init__(self, sorting_algos):
@@ -81,7 +82,7 @@ class MainWindow(QWidget):
 
         sorting.start_sorting(self.sorting_algos)
 
-        # Set up rendering loop
+        # Set up rendering loop using a QTimer
         self.frame_time_sum = 0
         self.fps_update_freq = 100
         self.frame_counter = 0
@@ -118,6 +119,7 @@ class MainWindow(QWidget):
         """ Render images of all the lists being sorted """
         for widget in self.sorting_widgets:
             widget.render_image()
+            # Unlock thread to allow another step of sorting
             widget.sorting_algo.unlock()
 
 

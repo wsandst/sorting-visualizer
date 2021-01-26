@@ -2,32 +2,11 @@ import special_types
 from special_types import SInt, SList
 
 import threading
-import time
-import random
-
-def bubble_sort(lst):
-    sorting = True
-    for j in range(len(lst) - 1, -1, -1):
-        sorting = False
-        for i in range(j):
-            if lst[i + 1] < lst[i]:
-                sorting = True
-                lst[i], lst[i + 1] = lst[i + 1], lst[i]
-        if not sorting:
-            break
-    return lst
-
-def bubble_sort_of_doom(lst):
-    max_index = len(lst) - 1
-    while max_index:
-        last_change_index = 0
-        for i in range(max_index):
-            if lst[i] > lst[i + 1]:
-                lst[i], lst[i + 1] = lst[i + 1], lst[i]
-                last_change_index = i
-        max_index = last_change_index
 
 class SortingAlgorithm():
+    """
+        Represents a Sorting Algorithm and handles its unique thread and related info
+    """
     def __init__(self, func, name, lst):
         self.lst = SList(lst)
         self.thread = threading.Thread(target = func, args = (self.lst,))
@@ -56,6 +35,7 @@ class SortingAlgorithm():
         special_types.thread_locks[self.thread.ident] = False
 
     def get_coloring(self):
+        """ Return an array representing coloring of specific indices """
         colors = [0] * len(self.lst)
         if self.lst.last_read_key >= 0:
             colors[self.lst.last_read_key] = 2
@@ -63,11 +43,14 @@ class SortingAlgorithm():
             colors[self.lst.last_write_key] = 2
         return colors
 
+
 def start_sorting(sorting_algos):
+    """ Start the threads of all the sorting algorithms """
     for algo in sorting_algos:
         algo.run()
 
 def run_sorting_step(sorting_algos):
+    """ Run sorting for x comparisons, then lock the thread as defined in special_types """
     any_thread_alive = False
     for algo in sorting_algos:
         if not algo.is_thread_locked():
