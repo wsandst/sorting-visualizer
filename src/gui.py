@@ -4,7 +4,9 @@ from PIL.ImageQt import ImageQt
 from PyQt5.QtCore import pyqtSignal, Qt, QTimer
 from PyQt5.QtWidgets import QWidget, QApplication, QLabel, QHBoxLayout, QVBoxLayout, QPushButton, QProgressBar, QSpinBox, QDoubleSpinBox, QFrame, QGridLayout, QRadioButton, QAction, QSizePolicy
 from PyQt5.QtGui import QIcon, QPixmap, QFont, QImage, QFontDatabase
+from PyQt5.QtMultimedia import QSound, QSoundEffect
 from PyQt5 import QtCore
+from PyQt5 import QtMultimedia
 
 import sys
 import visualizer
@@ -28,11 +30,6 @@ class SortingWidget(QWidget):
         self.metadata_label.setText("comparisons: 0 reads: 0 writes: 0")
         self.metadata_label.setAlignment(QtCore.Qt.AlignCenter)
 
-        #self.setSizePolicy(
-        #    QSizePolicy.MinimumExpanding,
-        #    QSizePolicy.MinimumExpanding
-        #)
-
         # Sorting bitmap
         self.image_label = QLabel(self)
         self.image_label.setAlignment(QtCore.Qt.AlignCenter)
@@ -52,9 +49,10 @@ class SortingWidget(QWidget):
         """ Generate an image of a sorting list """
         if self.sorting_algo.requires_rendering(): # No point in rendering if not needed
             # Render image
-            q_image = visualizer.list_to_bar_image(self.sorting_algo.lst, self.sorting_algo.get_coloring(), padding=2)
+            size = 800
+            q_image = visualizer.list_to_bar_image(self.sorting_algo.lst, self.sorting_algo.get_coloring(), padding=3, size=size)
             pixmap = QPixmap.fromImage(q_image)
-            pixmap = pixmap.scaled(400, 400)
+            pixmap = pixmap.scaled(size, size)
             self.image_label.setPixmap(pixmap)
             # Update sorting metadata
             self.update_sorting_metadata()
@@ -63,6 +61,7 @@ class SortingWidget(QWidget):
     def update_sorting_metadata(self):
         new_text = f'cmps: {self.sorting_algo.get_comparisons()} \t reads: {self.sorting_algo.get_reads()} \t writes: {self.sorting_algo.get_writes()}'
         self.metadata_label.setText(new_text)
+
 
 
 class MainWindow(QWidget):
@@ -76,21 +75,29 @@ class MainWindow(QWidget):
 
         # Setup custom font
         font_db = QFontDatabase()
-        font_id = font_db.addApplicationFont("../assets/Inter-Regular.ttf")
-        #print(QFontDatabase.applicationFontFamilies(font_id))
+        font_id = font_db.addApplicationFont("../assets/fonts/Inter-Regular.ttf")
 
+        # Setup sounds
+        self.sound_enabled = True
+        self.sounds = []
+        for i in range(64):
+            sound = QSoundEffect()
+            sound.setSource(QtCore.QUrl.fromLocalFile(f"../assets/sounds/tone-{i}.wav"))
+            sound.setVolume(5)
+            self.sounds.append(sound)
+
+        self.is_sound_playing = lambda: False
+
+        # Setup sorting widgets
         self.layout = QGridLayout(self)
         self.layout.setAlignment(Qt.AlignHCenter)
 
         self.sorting_widgets = []
 
-        #self.layout.setRowStretch(1,1)
-
         for i, algo in enumerate(sorting_algos):
             sorting_widget = SortingWidget(self, algo)
             self.layout.addWidget(sorting_widget, i // 3, i % 3)
             self.sorting_widgets.append(sorting_widget)
-
 
         self.sorting_algos = sorting_algos
 
@@ -105,7 +112,7 @@ class MainWindow(QWidget):
         self.last_frame = None
 
         self.renderSorting = QtCore.QTimer(self)
-        self.renderSorting.setInterval(18) #~60 FPS
+        self.renderSorting.setInterval(100) #~60 FPS
 
         self.renderSorting.timeout.connect(self.render_timeout)
         self.renderSorting.start()
@@ -113,7 +120,6 @@ class MainWindow(QWidget):
         # Render one frame
         self.running_sorting = False
         self.first_frame = True
-
 
     def render_timeout(self):
         """ Run a step of sorting algorithms and then render them to their images """
@@ -138,6 +144,8 @@ class MainWindow(QWidget):
 
     def render_sorting(self):
         """ Render images of all the lists being sorted """
+        if self.sound_enabled:
+            self.play_sound(self.sorting_algos[0])
         self.first_frame = False
         for widget in self.sorting_widgets:
             widget.render_image()
@@ -145,8 +153,18 @@ class MainWindow(QWidget):
             widget.sorting_algo.unlock()
 
     def keyPressEvent(self, event):
+        # Play/pause key
         if event.key() == Qt.Key_Return or event.key() == Qt.Key_Space:
             self.running_sorting = not self.running_sorting
+
+    def play_sound(self, sorting_algo):
+        """ Play a sound based on the last comparison. This is done using 64 different cached sound files """
+        if not self.is_sound_playing() and sorting_algo.requires_rendering() and not self.first_frame:
+            sound_index = sorting_algo.get_sound_index()
+            value = sorting_algo.lst.getitem_no_count(sound_index)
+            sound_index = round((value / sorting_algo.lst.max) * 63)
+            self.sounds[sound_index].play()
+            self.is_sound_playing = self.sounds[sound_index].isPlaying
 
 
 class MainApplication(QApplication):

@@ -20,6 +20,8 @@ class ThreadManagment:
     thread_locks = dict()
     cmp_lock_counter = 0
     cmp_before_lock = 1
+    last_cmp_left_by_thread = dict()
+    last_cmp_right_by_thread = dict()
 
 class SInt(int):
     """ Custom Int class. All custom functionality is created through decorators in setup_custom_int """
@@ -32,15 +34,17 @@ def inc_cmp_cnt(func):
         ThreadManagment.cmp_cnt_by_thread[threading.get_ident()] += 1
         
         # Handle thread locking if exceeding comparisons
-        cmp_lock_counter = ThreadManagment.cmp_lock_counter + 1
-        if cmp_lock_counter >= ThreadManagment.cmp_before_lock:
-            cmp_lock_counter = 0
+        ThreadManagment.cmp_lock_counter += 1
+        if ThreadManagment.cmp_lock_counter >= ThreadManagment.cmp_before_lock:
+            ThreadManagment.cmp_lock_counter = 0
             ThreadManagment.thread_locks[threading.get_ident()] = True
             # Wait until main thread unlocks this thread
             while ThreadManagment.thread_locks[threading.get_ident()]:        
                 # Sleep for a short time to improve multithreaded performance by releasing GIL
                 time.sleep(0.000001)
-
+        # Save the two numbers being compared
+        ThreadManagment.last_cmp_left_by_thread[threading.get_ident()] = args[0]
+        ThreadManagment.last_cmp_right_by_thread[threading.get_ident()] = args[1]
         return func(*args, **kwargs)
     return inner
 
@@ -74,12 +78,27 @@ class SList(list):
         self.last_read_key = key
         return super().__getitem__(key)
 
+    def getitem_no_count(self, key):
+        return super().__getitem__(key)
+
     def __setitem__(self, key, value):
         self.write_cnt = self.write_cnt + 1
         self.last_write_key = key
         return super().__setitem__(key, value)
 
     # Helper functions
+    def get_last_read_key(self):
+        if isinstance(self.last_read_key, int):
+            return self.last_read_key
+        else:
+            return 0
+
+    def get_last_write_key(self):
+        if isinstance(self.last_write_key, int):
+            return self.last_write_key
+        else:
+            return 0
+
     def randomize(self, size, upper_bound, lower_bound=1):
         """ Randomize list completely """
         random.seed(783248976)

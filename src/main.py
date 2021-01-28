@@ -6,12 +6,13 @@ from special_types import SList, ThreadManagment
 
 def main():
     lst = SList()
-    lst.shuffle_linear(100)
+    lst.shuffle_linear(64)
     # Init all the sorting algorithms
-    sorting_algos = [SortingAlgorithm(bubble_sort.bubble_sort, "Bubble Sort", lst),
-                    SortingAlgorithm(lambda x: py_timsort.timsort(x, ThreadManagment), "Python TimSort", lst),
-                    SortingAlgorithm(bubble_sort_of_doom.bubble_sort_of_doom, "Bubble Sort of Doom", lst),
-                    SortingAlgorithm(cocktail_sort_of_doom.cocktail_sort, "Cocktail Sort of Doom", lst)]
+    sorting_algos = [#SortingAlgorithm(bubble_sort.bubble_sort, "Bubble Sort", lst)]
+                    SortingAlgorithm(lambda x: py_timsort.timsort(x, ThreadManagment), "Python TimSort", lst)]
+                    #SortingAlgorithm(bubble_sort_of_doom.bubble_sort_of_doom, "Bubble Sort of Doom", lst)]
+                    #SortingAlgorithm(cocktail_sort_of_doom.cocktail_sort, "Cocktail Sort of Doom", lst),
+                    #SortingAlgorithm(merge_sort.merge_sort, "Merge Sort", lst)]
 
     application = gui.MainApplication(sorting_algos)
     
