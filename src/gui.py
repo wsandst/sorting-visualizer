@@ -83,7 +83,7 @@ class MainWindow(QWidget):
         for i in range(64):
             sound = QSoundEffect()
             sound.setSource(QtCore.QUrl.fromLocalFile(f"../assets/sounds/tone-{i}.wav"))
-            sound.setVolume(5)
+            sound.setVolume(0.3)
             self.sounds.append(sound)
 
         self.is_sound_playing = lambda: False
@@ -160,8 +160,7 @@ class MainWindow(QWidget):
     def play_sound(self, sorting_algo):
         """ Play a sound based on the last comparison. This is done using 64 different cached sound files """
         if not self.is_sound_playing() and sorting_algo.requires_rendering() and not self.first_frame:
-            sound_index = sorting_algo.get_sound_index()
-            value = sorting_algo.lst.getitem_no_count(sound_index)
+            value = sorting_algo.lst.getitem_no_count(sorting_algo.get_sound_index()-1)
             sound_index = round((value / sorting_algo.lst.max) * 63)
             self.sounds[sound_index].play()
             self.is_sound_playing = self.sounds[sound_index].isPlaying
