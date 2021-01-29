@@ -30,8 +30,9 @@ class SortingAlgorithm():
     def get_sound_index(self):
         # Return difference between the two last compared elements
         lhs = ThreadManagment.last_cmp_left_by_thread.get(self.thread.ident, 0)
-        rhs = ThreadManagment.last_cmp_right_by_thread.get(self.thread.ident, 0)
-        return round((lhs + rhs) / 2)
+        #rhs = ThreadManagment.last_cmp_right_by_thread.get(self.thread.ident, 0)
+        #return round((lhs + rhs) / 2)
+        return lhs
 
     def requires_rendering(self):
         if self.sorting_active: 

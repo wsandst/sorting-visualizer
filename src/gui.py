@@ -49,8 +49,8 @@ class SortingWidget(QWidget):
         """ Generate an image of a sorting list """
         if self.sorting_algo.requires_rendering(): # No point in rendering if not needed
             # Render image
-            size = 800
-            q_image = visualizer.list_to_bar_image(self.sorting_algo.lst, self.sorting_algo.get_coloring(), padding=3, size=size)
+            size = 400
+            q_image = visualizer.list_to_bar_image(self.sorting_algo.lst, self.sorting_algo.get_coloring(), padding=0, size=size)
             pixmap = QPixmap.fromImage(q_image)
             pixmap = pixmap.scaled(size, size)
             self.image_label.setPixmap(pixmap)
@@ -78,7 +78,7 @@ class MainWindow(QWidget):
         font_id = font_db.addApplicationFont("../assets/fonts/Inter-Regular.ttf")
 
         # Setup sounds
-        self.sound_enabled = True
+        self.sound_enabled = False
         self.sounds = []
         for i in range(64):
             sound = QSoundEffect()
@@ -112,7 +112,7 @@ class MainWindow(QWidget):
         self.last_frame = None
 
         self.renderSorting = QtCore.QTimer(self)
-        self.renderSorting.setInterval(100) #~60 FPS
+        self.renderSorting.setInterval(18) #~60 FPS
 
         self.renderSorting.timeout.connect(self.render_timeout)
         self.renderSorting.start()

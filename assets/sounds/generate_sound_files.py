@@ -6,6 +6,6 @@ count = 64
 print(f"Generating {count} different pitches")
 # 0.1 - 1.0
 for i in range(count):
-    pitch_tone = -18 + i*0.5
+    pitch_tone = -32 + i*0.7
     os.system(f"rubberband -t 0.2 -p {pitch_tone} harp.wav tone-{i}.wav")
 

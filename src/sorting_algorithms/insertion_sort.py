@@ -6,3 +6,4 @@ def insertion_sort(lst):
                 lst[j-i], lst[j-i+1] = lst[j-i+1], lst[j-i]
             else:
                 break
+    return lst
