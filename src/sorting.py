@@ -54,6 +54,8 @@ class SortingAlgorithm():
     def get_coloring(self):
         """ Return an array representing coloring of specific indices """
         colors = [0] * len(self.lst)
+        if not self.sorting_active: # Don't want any colors on the last frame
+            return colors
         # Last read
         if self.lst.get_last_read_key() >= 0:
             colors[self.lst.get_last_read_key()] = 2

@@ -50,7 +50,7 @@ class SortingWidget(QWidget):
         if self.sorting_algo.requires_rendering(): # No point in rendering if not needed
             # Render image
             size = 400
-            q_image = visualizer.list_to_bar_image(self.sorting_algo.lst, self.sorting_algo.get_coloring(), padding=0, size=size)
+            q_image = visualizer.list_to_bar_image(self.sorting_algo.lst, self.sorting_algo.get_coloring(), padding=3, size=size)
             pixmap = QPixmap.fromImage(q_image)
             pixmap = pixmap.scaled(size, size)
             self.image_label.setPixmap(pixmap)
@@ -96,7 +96,7 @@ class MainWindow(QWidget):
 
         for i, algo in enumerate(sorting_algos):
             sorting_widget = SortingWidget(self, algo)
-            self.layout.addWidget(sorting_widget, i // 3, i % 3)
+            self.layout.addWidget(sorting_widget, i // 4, i % 4)
             self.sorting_widgets.append(sorting_widget)
 
         self.sorting_algos = sorting_algos
