@@ -54,7 +54,10 @@ class SortingAlgorithm():
     def get_coloring(self):
         """ Return an array representing coloring of specific indices """
         colors = [0] * len(self.lst)
-        if not self.sorting_active: # Don't want any colors on the last frame
+        if not self.sorting_active: # Don't want any normal colors on the last frame
+            new_list = [int(i) for i in self.lst]
+            if sorted(new_list) == new_list: # The list is sorted, color it green
+                colors = [1] * len(self.lst)
             return colors
         # Last read
         if self.lst.get_last_read_key() >= 0:

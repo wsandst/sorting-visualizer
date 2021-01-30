@@ -6,7 +6,7 @@ from special_types import SList, ThreadManagment
 
 def main():
     lst = SList()
-    lst.shuffle_linear(800)
+    lst.randomize(400, 400)
     # Init all the sorting algorithms
     sorting_algos = [SortingAlgorithm(merge_sort.merge_sort, "Merge Sort", lst),
                     #SortingAlgorithm(heap_sort.heap_sort, "Heap Sort", lst),
