@@ -112,7 +112,7 @@ class MainWindow(QWidget):
         self.last_frame = None
 
         self.renderSorting = QtCore.QTimer(self)
-        self.renderSorting.setInterval(18) #~60 FPS
+        self.renderSorting.setInterval(50) #~60 FPS
 
         self.renderSorting.timeout.connect(self.render_timeout)
         self.renderSorting.start()

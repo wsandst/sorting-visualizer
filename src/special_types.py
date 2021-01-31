@@ -19,7 +19,7 @@ class ThreadManagment:
     cmp_cnt_by_thread = dict()
     thread_locks = dict()
     cmp_lock_counter = 0
-    cmp_before_lock = 40
+    cmp_before_lock = 10
     last_cmp_left_by_thread = dict()
     last_cmp_right_by_thread = dict()
 
@@ -76,6 +76,10 @@ class SList(list):
     def __getitem__(self, key):
         self.read_cnt = self.read_cnt + 1
         self.last_read_key = key
+        ret_val = super().__getitem__(key)
+        if isinstance(ret_val, list):
+            return SList(ret_val)
+
         return super().__getitem__(key)
 
     def getitem_no_count(self, key):
