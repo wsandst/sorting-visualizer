@@ -8,3 +8,4 @@ from . import py_timsort
 from . import quick_sort
 from . import heap_sort
 from . import bogo_sort
+from . import bogo_sort_of_doom
