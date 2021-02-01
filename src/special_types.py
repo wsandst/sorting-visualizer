@@ -19,7 +19,7 @@ class ThreadManagment:
     cmp_cnt_by_thread = dict()
     thread_locks = dict()
     cmp_lock_counter = 0
-    cmp_before_lock = 100
+    cmp_before_lock = 1
     last_cmp_left_by_thread = dict()
     last_cmp_right_by_thread = dict()
 
