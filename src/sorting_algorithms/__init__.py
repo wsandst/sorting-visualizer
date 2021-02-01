@@ -11,3 +11,4 @@ from . import bogo_sort
 from . import bogo_sort_of_doom
 from . import shell_sort
 from . import comb_sort
+from . import counting_sort

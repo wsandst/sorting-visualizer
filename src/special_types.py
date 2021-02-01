@@ -16,12 +16,22 @@ import threading
 
 # Avoiding globals
 class ThreadManagment:
-    cmp_cnt_by_thread = dict()
     thread_locks = dict()
     cmp_lock_counter = 0
     cmp_before_lock = 1
-    last_cmp_left_by_thread = dict()
-    last_cmp_right_by_thread = dict()
+    # Sorting information by thread
+    sort_data_by_thread = dict()
+
+class SortingMetadata:
+    def __init__(self):
+        self.cmp_cnt = 0
+        self.last_cmp_left = 0
+        self.last_cmp_right = 0
+        self.write_cnt = 0
+        self.read_cnt = 0
+        self.last_write_key = 0
+        self.last_read_key = 0
+        self.mem_usage = 0
 
 class SInt(int):
     """ Custom Int class. All custom functionality is created through decorators in setup_custom_int """
@@ -30,8 +40,7 @@ class SInt(int):
 def inc_cmp_cnt(func):
     """ Decorator for incrementing the comparison counter and handle thread locking """
     def inner(*args, **kwargs):
-        ThreadManagment.cmp_cnt_by_thread.setdefault(threading.get_ident(), 0)
-        ThreadManagment.cmp_cnt_by_thread[threading.get_ident()] += 1
+        ThreadManagment.sort_data_by_thread[threading.get_ident()].cmp_cnt += 1
         
         # Handle thread locking if exceeding comparisons
         ThreadManagment.cmp_lock_counter += 1
@@ -43,8 +52,8 @@ def inc_cmp_cnt(func):
                 # Sleep for a short time to improve multithreaded performance by releasing GIL
                 time.sleep(0.000001)
         # Save the two numbers being compared
-        ThreadManagment.last_cmp_left_by_thread[threading.get_ident()] = args[0]
-        ThreadManagment.last_cmp_right_by_thread[threading.get_ident()] = args[1]
+        ThreadManagment.sort_data_by_thread[threading.get_ident()].last_cmp_left = args[0]
+        ThreadManagment.sort_data_by_thread[threading.get_ident()].last_cmp_right = args[1]
         return func(*args, **kwargs)
     return inner
 
@@ -59,11 +68,6 @@ def setup_custom_int():
 class SList(list):
     """ Custom List function which keeps track of reads and writes """
     def __init__(self, *args, **kwargs):
-        self.read_cnt = 0
-        self.write_cnt = 0
-        self.last_read_key = -1
-        self.last_write_key = -1
-
         if len(args) > 0: 
             # If the list is being initialized by another list, find out the max of the list
             # without counting reads and writes. This saves computation later.
@@ -74,34 +78,31 @@ class SList(list):
         super().__init__(*args, **kwargs)
     
     def __getitem__(self, key):
-        self.read_cnt = self.read_cnt + 1
-        self.last_read_key = key
+        ThreadManagment.sort_data_by_thread[threading.get_ident()].read_cnt += 1
         ret_val = super().__getitem__(key)
         if isinstance(ret_val, list):
             return SList(ret_val)
+            
+        if isinstance(key, int):
+            ThreadManagment.sort_data_by_thread[threading.get_ident()].last_read_key = key
 
-        return super().__getitem__(key)
+        return ret_val
 
     def getitem_no_count(self, key):
         return super().__getitem__(key)
 
     def __setitem__(self, key, value):
-        self.write_cnt = self.write_cnt + 1
-        self.last_write_key = key
+        ThreadManagment.sort_data_by_thread[threading.get_ident()].write_cnt += 1
+        if isinstance(key, int):
+            ThreadManagment.sort_data_by_thread[threading.get_ident()].last_write_key = key
         return super().__setitem__(key, value)
 
     # Helper functions
     def get_last_read_key(self):
-        if isinstance(self.last_read_key, int):
-            return self.last_read_key
-        else:
-            return 0
+        return ThreadManagment.sort_data_by_thread[threading.get_ident()].last_read_key
 
     def get_last_write_key(self):
-        if isinstance(self.last_write_key, int):
-            return self.last_write_key
-        else:
-            return 0
+        return ThreadManagment.sort_data_by_thread[threading.get_ident()].last_write_key
 
     def randomize(self, size, upper_bound, lower_bound=1):
         """ Randomize list completely """

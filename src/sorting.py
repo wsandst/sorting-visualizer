@@ -16,20 +16,21 @@ class SortingAlgorithm():
     
     def run(self):
         self.thread.start()
+        special_types.ThreadManagment.sort_data_by_thread[self.thread.ident] = special_types.SortingMetadata()
         self.sorting_active = True
 
     def get_comparisons(self):
-        return ThreadManagment.cmp_cnt_by_thread.get(self.thread.ident, 0)
+        return ThreadManagment.sort_data_by_thread[self.thread.ident].cmp_cnt
 
     def get_reads(self):
-        return self.lst.read_cnt
+        return ThreadManagment.sort_data_by_thread[self.thread.ident].read_cnt
 
     def get_writes(self):
-        return self.lst.write_cnt
+        return ThreadManagment.sort_data_by_thread[self.thread.ident].write_cnt
 
     def get_sound_index(self):
         # Return difference between the two last compared elements
-        lhs = ThreadManagment.last_cmp_left_by_thread.get(self.thread.ident, 0)
+        lhs = ThreadManagment.sort_data_by_thread[self.thread.ident].last_cmp_left
         #rhs = ThreadManagment.last_cmp_right_by_thread.get(self.thread.ident, 0)
         #return round((lhs + rhs) / 2)
         return lhs
@@ -59,20 +60,22 @@ class SortingAlgorithm():
             if sorted(new_list) == new_list: # The list is sorted, color it green
                 colors = [1] * len(self.lst)
             return colors
-        # Last read
-        if self.lst.get_last_read_key() >= 0:
-            colors[self.lst.get_last_read_key()] = 2
+        # Last  read
+        last_read_key = ThreadManagment.sort_data_by_thread[self.thread.ident].last_read_key
+        if last_read_key >= 0:
+            colors[last_read_key] = 2
         # Last write
-        if self.lst.get_last_write_key() >= 0:
-            colors[self.lst.get_last_write_key()] = 2
+        last_write_key = ThreadManagment.sort_data_by_thread[self.thread.ident].last_write_key
+        if last_write_key >= 0:
+            colors[last_write_key] = 2
         # Last lhs comparison
-        last_cmp_left_value = ThreadManagment.last_cmp_left_by_thread.get(self.thread.ident,-1)
+        last_cmp_left_value = ThreadManagment.sort_data_by_thread[self.thread.ident].last_cmp_left
         for i in range(len(self.lst)):
             if int(self.lst.getitem_no_count(i)) == int(last_cmp_left_value):
                 colors[i] = 3
                 break
         # Last rhs comparison
-        last_cmp_right_value = ThreadManagment.last_cmp_right_by_thread.get(self.thread.ident,-1)
+        last_cmp_right_value =  ThreadManagment.sort_data_by_thread[self.thread.ident].last_cmp_right
         for i in range(len(self.lst)):
             if int(self.lst.getitem_no_count(i)) == int(last_cmp_right_value):
                 colors[i] = 3
