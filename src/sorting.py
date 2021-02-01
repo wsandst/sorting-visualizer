@@ -1,7 +1,11 @@
 import special_types
 from special_types import SInt, SList, ThreadManagment
 
-import threading
+import threading, time
+
+def sleep_then_run(func, lst):
+    time.sleep(0.05)
+    func(lst)
 
 class SortingAlgorithm():
     """
@@ -9,11 +13,11 @@ class SortingAlgorithm():
     """
     def __init__(self, func, name, lst):
         self.lst = SList(lst)
-        self.thread = threading.Thread(target = func, args = (self.lst,))
+        self.thread = threading.Thread(target = sleep_then_run, args = (func, self.lst,))
         self.thread.daemon = True
         self.name = name
         self.sorting_active = False
-    
+
     def run(self):
         self.thread.start()
         special_types.ThreadManagment.sort_data_by_thread[self.thread.ident] = special_types.SortingMetadata()

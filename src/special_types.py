@@ -18,11 +18,36 @@ import threading
 class ThreadManagment:
     thread_locks = dict()
     cmp_lock_counter = 0
+    read_lock_counter = 0
+    write_lock_counter = 0
+    lock_type = 2
     cmp_before_lock = 1
     # Sorting information by thread
     sort_data_by_thread = dict()
 
+def sleep_if_needed():
+    lock = False
+    if ThreadManagment.lock_type == 0: # Lock by cmps
+        if ThreadManagment.cmp_lock_counter >= ThreadManagment.cmp_before_lock:
+            ThreadManagment.cmp_lock_counter = 0
+            lock = True
+    elif ThreadManagment.lock_type == 1: # Lock by reads
+        if ThreadManagment.read_lock_counter >= ThreadManagment.cmp_before_lock:
+            ThreadManagment.read_lock_counter = 0
+            lock = True
+    elif ThreadManagment.lock_type == 2: # Lock by writes
+        if ThreadManagment.write_lock_counter >= ThreadManagment.cmp_before_lock:
+            ThreadManagment.write_lock_counter = 0
+            lock = True
+    if lock:
+        ThreadManagment.thread_locks[threading.get_ident()] = True
+        # Wait until main thread unlocks this thread
+        while ThreadManagment.thread_locks[threading.get_ident()]:        
+            # Sleep for a short time to improve multithreaded performance by releasing GIL
+            time.sleep(0.000001)
+
 class SortingMetadata:
+    """ Stores metadata connected to sorting such as cmp count """
     def __init__(self):
         self.cmp_cnt = 0
         self.last_cmp_left = 0
@@ -41,16 +66,9 @@ def inc_cmp_cnt(func):
     """ Decorator for incrementing the comparison counter and handle thread locking """
     def inner(*args, **kwargs):
         ThreadManagment.sort_data_by_thread[threading.get_ident()].cmp_cnt += 1
-        
         # Handle thread locking if exceeding comparisons
         ThreadManagment.cmp_lock_counter += 1
-        if ThreadManagment.cmp_lock_counter >= ThreadManagment.cmp_before_lock:
-            ThreadManagment.cmp_lock_counter = 0
-            ThreadManagment.thread_locks[threading.get_ident()] = True
-            # Wait until main thread unlocks this thread
-            while ThreadManagment.thread_locks[threading.get_ident()]:        
-                # Sleep for a short time to improve multithreaded performance by releasing GIL
-                time.sleep(0.000001)
+        sleep_if_needed()
         # Save the two numbers being compared
         ThreadManagment.sort_data_by_thread[threading.get_ident()].last_cmp_left = args[0]
         ThreadManagment.sort_data_by_thread[threading.get_ident()].last_cmp_right = args[1]
@@ -79,6 +97,8 @@ class SList(list):
     
     def __getitem__(self, key):
         ThreadManagment.sort_data_by_thread[threading.get_ident()].read_cnt += 1
+        ThreadManagment.read_lock_counter += 1
+        sleep_if_needed()
         ret_val = super().__getitem__(key)
         if isinstance(ret_val, list):
             return SList(ret_val)
@@ -93,6 +113,8 @@ class SList(list):
 
     def __setitem__(self, key, value):
         ThreadManagment.sort_data_by_thread[threading.get_ident()].write_cnt += 1
+        ThreadManagment.write_lock_counter += 1
+        sleep_if_needed()
         if isinstance(key, int):
             ThreadManagment.sort_data_by_thread[threading.get_ident()].last_write_key = key
         return super().__setitem__(key, value)
