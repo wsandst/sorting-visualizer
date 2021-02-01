@@ -20,8 +20,8 @@ class CounterWrapper:
 def custom_cmp(lhs, rhs):
     if CounterWrapper.cmp_counter >= CounterWrapper.cmp_limit:
         # Record the lhs and rhs for visualization
-        CounterWrapper.thread_management_ref.last_cmp_left_by_thread[threading.get_ident()] = lhs
-        CounterWrapper.thread_management_ref.last_cmp_right_by_thread[threading.get_ident()] = rhs
+        CounterWrapper.thread_management_ref.sort_data_by_thread[threading.get_ident()].last_cmp_left = lhs
+        CounterWrapper.thread_management_ref.sort_data_by_thread[threading.get_ident()].last_cmp_right = rhs
         raise TimBreak # Interupt if counter exceeded
     CounterWrapper.cmp_counter += 1
     return lhs - rhs
@@ -40,7 +40,7 @@ def timsort(lst, thread_management_ref):
     while True:
         CounterWrapper.cmp_counter = 0
         CounterWrapper.cmp_limit += thread_management_ref.cmp_before_lock # Do x more comparisons next run
-        thread_management_ref.cmp_cnt_by_thread[threading.get_ident()] = CounterWrapper.cmp_limit
+        thread_management_ref.sort_data_by_thread[threading.get_ident()].cmp_cnt = CounterWrapper.cmp_limit
         lst.__init__(orig_list.copy()) # Reset list to unsorted state
         try:
             lst.sort(key=cmp_to_key(custom_cmp)) # Sort list using custom compare function
