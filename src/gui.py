@@ -12,6 +12,7 @@ import sys
 import visualizer
 import sorting
 import time
+import special_types
 
 class SortingWidget(QWidget):
     """ A widget displaying a sorting algorithm and related info """
@@ -112,7 +113,9 @@ class MainWindow(QWidget):
         self.last_frame = None
 
         self.renderSorting = QtCore.QTimer(self)
-        self.renderSorting.setInterval(50) #~60 FPS
+        self.current_frame_time = 64
+        self.sorting_speed_mult = 1
+        self.renderSorting.setInterval(self.current_frame_time) #~60 FPS
 
         self.renderSorting.timeout.connect(self.render_timeout)
         self.renderSorting.start()
@@ -156,6 +159,22 @@ class MainWindow(QWidget):
         # Play/pause key
         if event.key() == Qt.Key_Return or event.key() == Qt.Key_Space:
             self.running_sorting = not self.running_sorting
+        if event.key() == Qt.Key_Right:
+            self.modify_speed(0.5)
+        if event.key() == Qt.Key_Left:
+            self.modify_speed(2)
+
+    def modify_speed(self, scale):
+        """ Increases the speed of the sorting visualization """
+        if self.current_frame_time <= 16 and (special_types.ThreadManagment.cmp_before_lock != 1 or scale < 1): 
+            # Already at ~60 FPS, modify comparisons allowed
+            special_types.ThreadManagment.cmp_before_lock = int(max(1, special_types.ThreadManagment.cmp_before_lock / scale))
+        else:
+            self.current_frame_time = max(16, scale*self.current_frame_time)
+            special_types.ThreadManagment.cmp_before_lock = 1
+            
+        self.renderSorting.setInterval(self.current_frame_time)
+        #print(f"Speed modified to {self.current_frame_time} ms, {special_types.ThreadManagment.cmp_before_lock} cmp_before_lock")
 
     def play_sound(self, sorting_algo):
         """ Play a sound based on the last comparison. This is done using 64 different cached sound files """
