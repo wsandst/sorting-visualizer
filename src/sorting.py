@@ -17,6 +17,7 @@ class SortingAlgorithm():
         self.thread.daemon = True
         self.name = name
         self.sorting_active = False
+        self.sorted_lst = sorted([int(i) for i in self.lst])
 
     def run(self):
         self.thread.start()
@@ -58,12 +59,13 @@ class SortingAlgorithm():
 
     def get_coloring(self):
         """ Return an array representing coloring of specific indices """
-        colors = [0] * len(self.lst)
+        colors = dict()
+        colors[-1] = 0
         if not self.sorting_active: # Don't want any normal colors on the last frame
             new_list = [int(i) for i in self.lst]
-            if sorted(new_list) == new_list: # The list is sorted, color it green
-                colors = [1] * len(self.lst)
-            return colors
+            if self.sorted_lst == new_list: # The list is sorted, color it green
+                colors[-1] = 1
+                return colors
         # Last  read
         last_read_key = ThreadManagment.sort_data_by_thread[self.thread.ident].last_read_key
         if last_read_key >= 0:
