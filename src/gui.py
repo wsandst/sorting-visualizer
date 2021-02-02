@@ -51,7 +51,7 @@ class SortingWidget(QWidget):
         if self.sorting_algo.requires_rendering(): # No point in rendering if not needed
             # Render image
             size = 400
-            q_image = visualizer.list_to_bar_image(self.sorting_algo.lst, self.sorting_algo.get_coloring(), padding=3, size=size)
+            q_image = visualizer.list_to_point_graph(self.sorting_algo.lst, self.sorting_algo.get_coloring(), padding=3, size=size)
             pixmap = QPixmap.fromImage(q_image)
             pixmap = pixmap.scaled(size, size)
             self.image_label.setPixmap(pixmap)
