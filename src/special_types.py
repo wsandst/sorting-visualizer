@@ -22,7 +22,7 @@ class ThreadManagment:
     cmp_lock_counter = 0
     read_lock_counter = 0
     write_lock_counter = 0
-    lock_type = 2
+    lock_type = 0
     cmp_before_lock = 1
     # Sorting information by thread
     sort_data_by_thread = dict()

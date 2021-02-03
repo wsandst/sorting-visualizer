@@ -13,3 +13,4 @@ from . import shell_sort
 from . import comb_sort
 from . import counting_sort
 from . import radix_lsd_sort
+from . import cubic_sort
