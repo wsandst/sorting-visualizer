@@ -93,7 +93,7 @@ def list_to_point_circle(lst, coloring, padding=0, size=400, rainbow=True, color
     default_color = color_map[coloring[-1]]
     coloring.pop(-1) 
 
-    angle_delta = (2*3.141592) / len(lst)
+    angle_delta = (4*3.141592) / len(lst)
     vector_scaling = 1 / lst.max
 
     radius = 400 / 2
@@ -106,10 +106,12 @@ def list_to_point_circle(lst, coloring, padding=0, size=400, rainbow=True, color
         angle = angle_delta * i
         x = radius * math.cos(angle)
         y = radius * math.sin(angle)
-        #x = radius + x * vector_scaling * num
-        #y = radius + y * vector_scaling * num
-        x = radius + x * (1 - vector_scaling * abs(i - num))
-        y = radius + y * (1 - vector_scaling * abs(i - num))
+        x = radius + x * vector_scaling * num
+        y = radius + y * vector_scaling * num
+        #diff = abs(i - (num - 1))
+        #scaling = min(diff, lst.max - diff)
+        #x = radius + x * (1 - vector_scaling * scaling)
+        #y = radius + y * (1 - vector_scaling * scaling)
         if rainbow:
             color = colorsys.hsv_to_rgb(hue_delta*num, 0.8, 1)
             color = (math.floor(color[0]*255), math.floor(color[1]*255), math.floor(color[2]*255))
