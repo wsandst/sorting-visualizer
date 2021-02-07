@@ -1,9 +1,10 @@
 
 def insertion_sort(lst):
-    for j in range(len(lst)-1):
-        for i in range(j+1):
-            if lst[j-i] > lst[j-i+1]: # Swap down if smaller
-                lst[j-i], lst[j-i+1] = lst[j-i+1], lst[j-i]
-            else:
-                break
+    for j in range(1, len(lst)):
+        key = lst[j]
+        i = j - 1
+        while i >= 0 and key < lst[i]:
+            lst[i+1] = lst[i]
+            i -= 1
+        lst[i+1] = key
     return lst
