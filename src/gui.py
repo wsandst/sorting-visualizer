@@ -2,17 +2,22 @@
 
 from PIL.ImageQt import ImageQt
 from PyQt5.QtCore import pyqtSignal, Qt, QTimer
-from PyQt5.QtWidgets import QWidget, QApplication, QStackedWidget, QLabel, QHBoxLayout, QVBoxLayout, QPushButton, QProgressBar, QSpinBox, QDoubleSpinBox, QFrame, QGridLayout, QRadioButton, QAction, QSizePolicy
+from PyQt5.QtWidgets import QWidget, QApplication, QStackedWidget, QCheckBox, QSpacerItem, QLabel, QComboBox, QHBoxLayout, QVBoxLayout, QPushButton, QFrame, QGridLayout, QAction, QSizePolicy
 from PyQt5.QtGui import QIcon, QPixmap, QFont, QImage, QFontDatabase
 from PyQt5.QtMultimedia import QSound, QSoundEffect
 from PyQt5 import QtCore
 from PyQt5 import QtMultimedia
 
+from enum import Enum
 import sys
+import time
+
 import visualizer
 import sorting
-import time
 import special_types
+from sorting import SortingAlgorithm
+
+SortRenderType = Enum("SortingRenderingType", "BarGraph PointGraph PointSpiral PointCircle")
 
 class SortingWidget(QWidget):
     """ A widget displaying a sorting algorithm and related info """
@@ -34,7 +39,7 @@ class SortingWidget(QWidget):
         # Sorting bitmap
         self.image_label = QLabel(self)
         self.image_label.setAlignment(QtCore.Qt.AlignCenter)
-        self.image_label.setMinimumSize(400, 400)
+        self.image_label.setMinimumSize(384, 384)
 
         self.layout.addWidget(self.name_label)
         self.layout.addWidget(self.metadata_label)
@@ -47,13 +52,20 @@ class SortingWidget(QWidget):
         self.metadata_label.setFont(small_font)
 
 
-    def generateImage(self):
+    def generateImage(self, rendering_type, rainbow):
         """ Generate an image of a sorting list """
-        print(self.image_label.size())
         if self.sorting_algo.requires_rendering(): # No point in rendering if not needed
             # Render image
-            size = 400
-            q_image = visualizer.list_to_bar_graph(self.sorting_algo.lst, self.sorting_algo.get_coloring(), padding=3, size=size, rainbow=False)
+            size = 384
+            q_image = None
+            if rendering_type == SortRenderType.BarGraph:
+                q_image = visualizer.list_to_bar_graph(self.sorting_algo.lst, self.sorting_algo.get_coloring(), padding=3, size=size, rainbow=rainbow)
+            elif rendering_type == SortRenderType.PointGraph:
+                q_image = visualizer.list_to_point_graph(self.sorting_algo.lst, self.sorting_algo.get_coloring(), padding=3, size=size, rainbow=rainbow)
+            elif rendering_type == SortRenderType.PointSpiral:
+                q_image = visualizer.list_to_point_spiral(self.sorting_algo.lst, self.sorting_algo.get_coloring(), padding=3, size=size, rainbow=rainbow)
+            elif rendering_type == SortRenderType.PointCircle:
+                q_image = visualizer.list_to_point_disparity(self.sorting_algo.lst, self.sorting_algo.get_coloring(), padding=3, size=size, rainbow=rainbow)
             pixmap = QPixmap.fromImage(q_image)
             pixmap = pixmap.scaled(size, size)
             self.image_label.setPixmap(pixmap)
@@ -67,7 +79,7 @@ class SortingWidget(QWidget):
 
 
 class SortingTab(QWidget):
-    def __init__(self, parent, sorting_algos):
+    def __init__(self, parent):
         """ Tab window for visualising Sorting Algorithms """
         super(SortingTab, self).__init__(parent)
 
@@ -86,6 +98,10 @@ class SortingTab(QWidget):
         self.layout = QGridLayout(self)
         self.layout.setAlignment(Qt.AlignHCenter)
 
+        self.rendering_type = SortRenderType.BarGraph
+        self.rainbow = False
+
+    def updateSortingAlgorithms(self, sorting_algos):
         self.sorting_widgets = []
 
         for i, algo in enumerate(sorting_algos):
@@ -95,6 +111,7 @@ class SortingTab(QWidget):
 
         self.sorting_algos = sorting_algos
 
+    def startRendering(self):
         self.renderSorting()
 
         sorting.start_sorting(self.sorting_algos)
@@ -144,7 +161,7 @@ class SortingTab(QWidget):
             self.playSound(self.sorting_algos[0])
         self.first_frame = False
         for widget in self.sorting_widgets:
-            widget.generateImage()
+            widget.generateImage(self.rendering_type, self.rainbow)
             # Unlock thread to allow another step of sorting
             widget.sorting_algo.unlock()
 
@@ -178,11 +195,122 @@ class SortingTab(QWidget):
             self.is_sound_playing = self.sounds[sound_index].isPlaying
 
 class SelectionTab(QWidget):
-    def __init__(self, parent, sorting_algos):
+    def __init__(self, parent, sorting_func_map, main_window):
         super(SelectionTab, self).__init__(parent)
+        self.sorting_func_map = sorting_func_map
+
+        self.main_window = main_window
+        self.layout = QVBoxLayout(self)
+        self.layout.setContentsMargins(10,10,10,10)
+        self.layout.setAlignment(Qt.AlignTop)
+
+
+        self.hlayout = QHBoxLayout(self)
+        self.vlayout = QVBoxLayout(self)
+        self.layout.addLayout(self.hlayout)
+        self.hlayout.addLayout(self.vlayout)
+        self.hlayout.setSpacing(15)
+        #self.hlayout.setAlignment(Qt.AlignLeft)
+
+        self.vlayout.setAlignment(Qt.AlignTop)
+        self.vlayout.setSpacing(10)
+
+        # Select sorting algorithms
+        label = QLabel()
+        label.setText("Select Sorting Algorithms")
+        self.vlayout.addWidget(label)
+        self.sorting_selections = []
+        for i in range(8):
+            sorting_selection = QComboBox(self)
+            sorting_selection.setMinimumWidth(150)
+            sorting_selection.addItems(sorting_func_map.keys())
+            self.sorting_selections.append(sorting_selection)
+            self.vlayout.addWidget(sorting_selection, Qt.AlignLeft)
+
+        # Separator
+        separator_line = QFrame()
+        separator_line.setFrameShape(QFrame.VLine)
+        separator_line.setStyleSheet("QFrame { color : #535353; }")
+        separator_line.setLineWidth(1)
+        self.hlayout.addWidget(separator_line)
+
+        # Select drawing options
+        self.vlayout2 = QVBoxLayout(self)
+        self.vlayout2.setAlignment(Qt.AlignTop)
+        self.vlayout2.setSpacing(10)
+
+        # Element count
+        label = QLabel()
+        label.setText("Amount of Elements")
+        self.vlayout2.addWidget(label)
+
+        self.element_count_input = QComboBox(self)
+        self.element_count_input.setMinimumWidth(150)
+        powers_of_two = [str(2**x) for x in range(3, 12)]
+        self.element_count_input.addItems(powers_of_two)
+        self.element_count_input.setCurrentText("64")
+        self.vlayout2.addWidget(self.element_count_input)
+
+        # Rendering style
+        label = QLabel()
+        label.setText("Rendering style")
+        self.vlayout2.addWidget(label)
+
+        self.rendering_input = QComboBox(self)
+        self.rendering_input.setMinimumWidth(150)
+        self.rendering_input.addItems(["Bar Graph", "Point Graph", "Point Spiral", "Point Circle"])
+        self.vlayout2.addWidget(self.rendering_input)
+
+        self.linear_checkbox = QCheckBox()
+        self.linear_checkbox.setText("Shuffle Linear Elements")
+        self.linear_checkbox.setChecked(True)
+        self.linear_checkbox.setStyleSheet("QCheckBox::indicator::unchecked { border-radius:5px; border-style: solid; border-width:1px; border-color: gray;}")
+        self.vlayout2.addWidget(self.linear_checkbox)
+
+        self.color_checkbox = QCheckBox()
+        self.color_checkbox.setText("Rainbow Coloring")
+        self.color_checkbox.setStyleSheet("QCheckBox::indicator::unchecked { border-radius:5px; border-style: solid; border-width:1px; border-color: gray;}")
+        self.vlayout2.addWidget(self.color_checkbox)
+        
+
+        self.hlayout.addLayout(self.vlayout2)
+
+        self.hlayout.addStretch(1)
+        self.layout.addSpacing(20)
+
+        start_button = QPushButton(self)
+        start_button.setText("Start Sorting")
+        start_button.setMaximumWidth(390)
+        start_button.setMinimumWidth(300)
+        start_button.clicked.connect(self.startSorting)
+
+        self.layout.addWidget(start_button, Qt.AlignCenter)
+        self.layout.addStretch(1)
+
+    def startSorting(self):
+
+        # Generate list based on options
+        lst = special_types.SList()
+        element_count = int(self.element_count_input.currentText())
+        if self.linear_checkbox.isChecked():
+            lst.shuffle_linear(element_count)
+        else:
+            lst.randomize(element_count, element_count)
+
+        # Other attributes
+        rendering_types_map = {"Bar Graph": SortRenderType.BarGraph, "Point Graph": SortRenderType.PointGraph, 
+            "Point Spiral": SortRenderType.PointSpiral, "Point Circle": SortRenderType.PointCircle}
+
+        rainbow = self.color_checkbox.isChecked()
+        rendering_type = rendering_types_map[self.rendering_input.currentText()]
+
+        # Convert dropdown names to Sorting Algorithm objects. Filter out "None" options
+        algo_names = filter(lambda a: a != "None", [dropdown.currentText() for dropdown in self.sorting_selections])
+        sorting_algos = [SortingAlgorithm(self.sorting_func_map[name], name, lst) for name in algo_names]
+        self.main_window.switchToSorting(sorting_algos, element_count, rendering_type, rainbow)
 
 class MainWindow(QWidget):
-    def __init__(self, sorting_algos):
+    def __init__(self, sorting_func_map):
         super(MainWindow, self).__init__()
 
         self.setWindowTitle('Sorting Algorithms Visualized')
@@ -194,22 +322,33 @@ class MainWindow(QWidget):
 
         # Setup window tabs
         self.tabs = QStackedWidget(self)
-        self.selection_tab = SelectionTab(self.tabs, sorting_algos)
-        self.sorting_tab = SortingTab(self.tabs, sorting_algos)
+        self.selection_tab = SelectionTab(self.tabs, sorting_func_map, self)
+        self.sorting_tab = SortingTab(self.tabs)
 
         self.tabs.addWidget(self.selection_tab)
         self.tabs.addWidget(self.sorting_tab)
 
-        self.tabs.setCurrentIndex(1)
+        self.tabs.setCurrentIndex(0)
         self.tabs.currentWidget().setFocus()
 
-        self.resize(self.tabs.sizeHint())
+        self.resize(400, 380)
+        #self.selection_tab.resize(400, 380)
+
+    def switchToSorting(self, sorting_algos, element_count, rendering_type, rainbow):
+        count = max(1, len(sorting_algos))
+        self.resize(430 * min(4, count), 430 * min(2, (count-1)//4 + 1))
+        self.tabs.resize(430 * min(4, count), 430 * min(2, (count-1)//4 + 1))
+        self.tabs.setCurrentIndex(1)
+        self.sorting_tab.rendering_type = rendering_type
+        self.sorting_tab.rainbow = rainbow
+        self.sorting_tab.updateSortingAlgorithms(sorting_algos)
+        self.sorting_tab.startRendering()
 
 class MainApplication(QApplication):
-    def __init__(self, sorting_algos):
+    def __init__(self, sorting_func_map):
         super().__init__([])
 
-        window = MainWindow(sorting_algos)
+        window = MainWindow(sorting_func_map)
         window.show()
 
         sys.exit(self.exec_())
