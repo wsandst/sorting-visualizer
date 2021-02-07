@@ -2,7 +2,7 @@
 
 from PIL.ImageQt import ImageQt
 from PyQt5.QtCore import pyqtSignal, Qt, QTimer
-from PyQt5.QtWidgets import QWidget, QApplication, QLabel, QHBoxLayout, QVBoxLayout, QPushButton, QProgressBar, QSpinBox, QDoubleSpinBox, QFrame, QGridLayout, QRadioButton, QAction, QSizePolicy
+from PyQt5.QtWidgets import QWidget, QApplication, QStackedWidget, QLabel, QHBoxLayout, QVBoxLayout, QPushButton, QProgressBar, QSpinBox, QDoubleSpinBox, QFrame, QGridLayout, QRadioButton, QAction, QSizePolicy
 from PyQt5.QtGui import QIcon, QPixmap, QFont, QImage, QFontDatabase
 from PyQt5.QtMultimedia import QSound, QSoundEffect
 from PyQt5 import QtCore
@@ -17,7 +17,7 @@ import special_types
 class SortingWidget(QWidget):
     """ A widget displaying a sorting algorithm and related info """
     def __init__(self, parent, sorting_algo):
-        QWidget.__init__(self, parent=parent)
+        super(SortingWidget, self).__init__(parent)
         self.sorting_algo = sorting_algo
         self.layout = QVBoxLayout(self)
         self.layout.addStretch(1)
@@ -34,10 +34,11 @@ class SortingWidget(QWidget):
         # Sorting bitmap
         self.image_label = QLabel(self)
         self.image_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.image_label.setMinimumSize(400, 400)
 
         self.layout.addWidget(self.name_label)
         self.layout.addWidget(self.metadata_label)
-        self.layout.addWidget(self.image_label)
+        self.layout.addWidget(self.image_label) 
 
         # Setup correct fonts
         medium_font = QFont("Inter", 12)
@@ -46,8 +47,9 @@ class SortingWidget(QWidget):
         self.metadata_label.setFont(small_font)
 
 
-    def render_image(self):
+    def generateImage(self):
         """ Generate an image of a sorting list """
+        print(self.image_label.size())
         if self.sorting_algo.requires_rendering(): # No point in rendering if not needed
             # Render image
             size = 400
@@ -56,27 +58,18 @@ class SortingWidget(QWidget):
             pixmap = pixmap.scaled(size, size)
             self.image_label.setPixmap(pixmap)
             # Update sorting metadata
-            self.update_sorting_metadata()
+            self.updateSortingMetadata()
             self.update()
 
-    def update_sorting_metadata(self):
+    def updateSortingMetadata(self):
         new_text = f'cmps: {self.sorting_algo.get_comparisons()} \t reads: {self.sorting_algo.get_reads()} \t writes: {self.sorting_algo.get_writes()}'
         self.metadata_label.setText(new_text)
 
 
-
-class MainWindow(QWidget):
-    def __init__(self, sorting_algos):
-        """ Initiate the GUI Window and create all the relevant Widgets """
-        super(MainWindow, self).__init__()
-
-        self.setWindowTitle('Sorting Algorithms Visualized')
-        #self.setFixedSize(825, 590)
-        self.setStyleSheet("background-color: #181818; color: white")
-
-        # Setup custom font
-        font_db = QFontDatabase()
-        font_id = font_db.addApplicationFont("../assets/fonts/Inter-Regular.ttf")
+class SortingTab(QWidget):
+    def __init__(self, parent, sorting_algos):
+        """ Tab window for visualising Sorting Algorithms """
+        super(SortingTab, self).__init__(parent)
 
         # Setup sounds
         self.sound_enabled = False
@@ -102,7 +95,7 @@ class MainWindow(QWidget):
 
         self.sorting_algos = sorting_algos
 
-        self.render_sorting()
+        self.renderSorting()
 
         sorting.start_sorting(self.sorting_algos)
 
@@ -112,19 +105,19 @@ class MainWindow(QWidget):
         self.frame_counter = 0
         self.last_frame = None
 
-        self.renderSorting = QtCore.QTimer(self)
+        self.render_timer = QtCore.QTimer(self)
         self.current_frame_time = 64
         self.sorting_speed_mult = 1
-        self.renderSorting.setInterval(self.current_frame_time) #~60 FPS
+        self.render_timer.setInterval(self.current_frame_time) #~60 FPS
 
-        self.renderSorting.timeout.connect(self.render_timeout)
-        self.renderSorting.start()
+        self.render_timer.timeout.connect(self.renderTimeout)
+        self.render_timer.start()
 
         # Render one frame
         self.running_sorting = False
         self.first_frame = True
 
-    def render_timeout(self):
+    def renderTimeout(self):
         """ Run a step of sorting algorithms and then render them to their images """
         if self.last_frame == None:
             self.last_frame = time.time()
@@ -132,7 +125,7 @@ class MainWindow(QWidget):
         # Render the lists that are being sorted
         # Only render a frame if the sorting step is complete
         if (self.running_sorting or self.first_frame) and sorting.is_sorting_step_complete(self.sorting_algos):
-            self.render_sorting()
+            self.renderSorting()
 
         # Calculate FPS and print it
         end = time.time()
@@ -145,13 +138,13 @@ class MainWindow(QWidget):
             self.frame_time_sum = 0
         
 
-    def render_sorting(self):
+    def renderSorting(self):
         """ Render images of all the lists being sorted """
         if self.sound_enabled:
-            self.play_sound(self.sorting_algos[0])
+            self.playSound(self.sorting_algos[0])
         self.first_frame = False
         for widget in self.sorting_widgets:
-            widget.render_image()
+            widget.generateImage()
             # Unlock thread to allow another step of sorting
             widget.sorting_algo.unlock()
 
@@ -160,11 +153,11 @@ class MainWindow(QWidget):
         if event.key() == Qt.Key_Return or event.key() == Qt.Key_Space:
             self.running_sorting = not self.running_sorting
         if event.key() == Qt.Key_Right:
-            self.modify_speed(0.5)
+            self.modifySpeed(0.5)
         if event.key() == Qt.Key_Left:
-            self.modify_speed(2)
+            self.modifySpeed(2)
 
-    def modify_speed(self, scale):
+    def modifySpeed(self, scale):
         """ Increases the speed of the sorting visualization """
         if self.current_frame_time <= 16 and (special_types.ThreadManagment.cmp_before_lock != 1 or scale < 1): 
             # Already at ~60 FPS, modify comparisons allowed
@@ -173,10 +166,10 @@ class MainWindow(QWidget):
             self.current_frame_time = max(16, scale*self.current_frame_time)
             special_types.ThreadManagment.cmp_before_lock = 1
             
-        self.renderSorting.setInterval(self.current_frame_time)
+        self.render_timer.setInterval(self.current_frame_time)
         #print(f"Speed modified to {self.current_frame_time} ms, {special_types.ThreadManagment.cmp_before_lock} cmp_before_lock")
 
-    def play_sound(self, sorting_algo):
+    def playSound(self, sorting_algo):
         """ Play a sound based on the last comparison. This is done using 64 different cached sound files """
         if not self.is_sound_playing() and sorting_algo.requires_rendering() and not self.first_frame:
             value = sorting_algo.lst.getitem_no_count(sorting_algo.get_sound_index()-1)
@@ -184,6 +177,33 @@ class MainWindow(QWidget):
             self.sounds[sound_index].play()
             self.is_sound_playing = self.sounds[sound_index].isPlaying
 
+class SelectionTab(QWidget):
+    def __init__(self, parent, sorting_algos):
+        super(SelectionTab, self).__init__(parent)
+
+class MainWindow(QWidget):
+    def __init__(self, sorting_algos):
+        super(MainWindow, self).__init__()
+
+        self.setWindowTitle('Sorting Algorithms Visualized')
+        self.setStyleSheet("background-color: #181818; color: white")
+
+        # Setup custom font
+        font_db = QFontDatabase()
+        font_id = font_db.addApplicationFont("../assets/fonts/Inter-Regular.ttf")
+
+        # Setup window tabs
+        self.tabs = QStackedWidget(self)
+        self.selection_tab = SelectionTab(self.tabs, sorting_algos)
+        self.sorting_tab = SortingTab(self.tabs, sorting_algos)
+
+        self.tabs.addWidget(self.selection_tab)
+        self.tabs.addWidget(self.sorting_tab)
+
+        self.tabs.setCurrentIndex(1)
+        self.tabs.currentWidget().setFocus()
+
+        self.resize(self.tabs.sizeHint())
 
 class MainApplication(QApplication):
     def __init__(self, sorting_algos):
