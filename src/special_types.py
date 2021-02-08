@@ -9,12 +9,13 @@ Every sorting algorithm is on its own thread and can be locked by the user "invi
 import random
 import time
 import threading
+from enum import Enum
 
 # Dictionaries which hold thread related info, such as locks
 # They are indexed by the thread id. These have to be global to allow communication
 # Between the Int Cmp function and the rest of the program
 
-
+LockType = Enum("LockType", "Comparisons Writes Both")
 
 # Avoiding globals
 class ThreadManagment:
@@ -22,24 +23,25 @@ class ThreadManagment:
     cmp_lock_counter = 0
     read_lock_counter = 0
     write_lock_counter = 0
-    lock_type = 0
+    lock_type = LockType.Writes
     cmp_before_lock = 1
     # Sorting information by thread
     sort_data_by_thread = dict()
 
 def sleep_if_needed():
     lock = False
-    if ThreadManagment.lock_type == 0: # Lock by cmps
+    if ThreadManagment.lock_type == LockType.Comparisons: # Lock by cmps
         if ThreadManagment.cmp_lock_counter >= ThreadManagment.cmp_before_lock:
             ThreadManagment.cmp_lock_counter = 0
             lock = True
-    elif ThreadManagment.lock_type == 1: # Lock by reads
-        if ThreadManagment.read_lock_counter >= ThreadManagment.cmp_before_lock:
-            ThreadManagment.read_lock_counter = 0
-            lock = True
-    elif ThreadManagment.lock_type == 2: # Lock by writes
+    elif ThreadManagment.lock_type == LockType.Writes: # Lock by writes
         if ThreadManagment.write_lock_counter >= ThreadManagment.cmp_before_lock:
             ThreadManagment.write_lock_counter = 0
+            lock = True
+    elif ThreadManagment.lock_type == LockType.Both: # Lock by 
+        if (ThreadManagment.write_lock_counter + ThreadManagment.cmp_lock_counter) >= ThreadManagment.cmp_before_lock:
+            ThreadManagment.write_lock_counter = 0
+            ThreadManagment.cmp_lock_counter = 0
             lock = True
     if lock:
         ThreadManagment.thread_locks[threading.get_ident()] = True

@@ -271,7 +271,21 @@ class SelectionTab(QWidget):
         self.color_checkbox.setText("Rainbow Coloring")
         self.color_checkbox.setStyleSheet("QCheckBox::indicator::unchecked { border-radius:5px; border-style: solid; border-width:1px; border-color: gray;}")
         self.vlayout2.addWidget(self.color_checkbox)
-        
+
+        self.sound_checkbox = QCheckBox()
+        self.sound_checkbox.setText("Sound")
+        self.sound_checkbox.setStyleSheet("QCheckBox::indicator::unchecked { border-radius:5px; border-style: solid; border-width:1px; border-color: gray;}")
+        self.vlayout2.addWidget(self.sound_checkbox)
+
+        # Rendering style
+        label = QLabel()
+        label.setText("Render based on: ")
+        self.vlayout2.addWidget(label)
+
+        self.lock_type_input = QComboBox(self)
+        self.lock_type_input.setMinimumWidth(150)
+        self.lock_type_input.addItems(["Comparisons", "Writes", "Both"])
+        self.vlayout2.addWidget(self.lock_type_input)
 
         self.hlayout.addLayout(self.vlayout2)
 
@@ -283,6 +297,7 @@ class SelectionTab(QWidget):
         start_button.setMaximumWidth(390)
         start_button.setMinimumWidth(300)
         start_button.clicked.connect(self.startSorting)
+        
 
         self.layout.addWidget(start_button, Qt.AlignCenter)
         self.layout.addStretch(1)
@@ -300,14 +315,19 @@ class SelectionTab(QWidget):
         # Other attributes
         rendering_types_map = {"Bar Graph": SortRenderType.BarGraph, "Point Graph": SortRenderType.PointGraph, 
             "Point Spiral": SortRenderType.PointSpiral, "Point Circle": SortRenderType.PointCircle}
+        lock_types_map = {"Comparisons": special_types.LockType.Comparisons, 
+            "Writes": special_types.LockType.Writes,
+            "Both": special_types.LockType.Both}
 
         rainbow = self.color_checkbox.isChecked()
         rendering_type = rendering_types_map[self.rendering_input.currentText()]
+        sound = self.sound_checkbox.isChecked()
+        lock_type = lock_types_map[self.lock_type_input.currentText()]
 
         # Convert dropdown names to Sorting Algorithm objects. Filter out "None" options
         algo_names = filter(lambda a: a != "None", [dropdown.currentText() for dropdown in self.sorting_selections])
         sorting_algos = [SortingAlgorithm(self.sorting_func_map[name], name, lst) for name in algo_names]
-        self.main_window.switchToSorting(sorting_algos, element_count, rendering_type, rainbow)
+        self.main_window.switchToSorting(sorting_algos, element_count, rendering_type, rainbow, sound, lock_type)
 
 class MainWindow(QWidget):
     def __init__(self, sorting_func_map):
@@ -334,7 +354,7 @@ class MainWindow(QWidget):
         self.resize(500, 440)
         self.selection_tab.resize(500, 440)
 
-    def switchToSorting(self, sorting_algos, element_count, rendering_type, rainbow):
+    def switchToSorting(self, sorting_algos, element_count, rendering_type, rainbow, sound, lock_type):
         count = max(1, len(sorting_algos))
         self.resize(450 * min(4, count), 450 * min(2, (count-1)//4 + 1))
         self.tabs.resize(450 * min(4, count), 450 * min(2, (count-1)//4 + 1))
@@ -342,6 +362,8 @@ class MainWindow(QWidget):
         self.tabs.setCurrentIndex(1)
         self.sorting_tab.rendering_type = rendering_type
         self.sorting_tab.rainbow = rainbow
+        self.sorting_tab.sound_enabled = sound
+        special_types.ThreadManagment.lock_type = lock_type
         self.sorting_tab.updateSortingAlgorithms(sorting_algos)
         self.sorting_tab.startRendering()
 
