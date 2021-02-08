@@ -84,7 +84,7 @@ class SortingTab(QWidget):
         super(SortingTab, self).__init__(parent)
 
         # Setup sounds
-        self.sound_enabled = False
+        self.sound_enabled = True
         self.sounds = []
         for i in range(64):
             sound = QSoundEffect()
@@ -189,7 +189,7 @@ class SortingTab(QWidget):
     def playSound(self, sorting_algo):
         """ Play a sound based on the last comparison. This is done using 64 different cached sound files """
         if not self.is_sound_playing() and sorting_algo.requires_rendering() and not self.first_frame:
-            value = sorting_algo.lst.getitem_no_count(sorting_algo.get_sound_index()-1)
+            value = sorting_algo.get_sound_index()
             sound_index = round((value / sorting_algo.lst.max) * 63)
             self.sounds[sound_index].play()
             self.is_sound_playing = self.sounds[sound_index].isPlaying
@@ -205,8 +205,8 @@ class SelectionTab(QWidget):
         self.layout.setAlignment(Qt.AlignTop)
 
 
-        self.hlayout = QHBoxLayout(self)
-        self.vlayout = QVBoxLayout(self)
+        self.hlayout = QHBoxLayout()
+        self.vlayout = QVBoxLayout()
         self.layout.addLayout(self.hlayout)
         self.hlayout.addLayout(self.vlayout)
         self.hlayout.setSpacing(15)
@@ -235,7 +235,7 @@ class SelectionTab(QWidget):
         self.hlayout.addWidget(separator_line)
 
         # Select drawing options
-        self.vlayout2 = QVBoxLayout(self)
+        self.vlayout2 = QVBoxLayout()
         self.vlayout2.setAlignment(Qt.AlignTop)
         self.vlayout2.setSpacing(10)
 
@@ -331,13 +331,14 @@ class MainWindow(QWidget):
         self.tabs.setCurrentIndex(0)
         self.tabs.currentWidget().setFocus()
 
-        self.resize(400, 380)
-        #self.selection_tab.resize(400, 380)
+        self.resize(500, 440)
+        self.selection_tab.resize(500, 440)
 
     def switchToSorting(self, sorting_algos, element_count, rendering_type, rainbow):
         count = max(1, len(sorting_algos))
-        self.resize(430 * min(4, count), 430 * min(2, (count-1)//4 + 1))
-        self.tabs.resize(430 * min(4, count), 430 * min(2, (count-1)//4 + 1))
+        self.resize(450 * min(4, count), 450 * min(2, (count-1)//4 + 1))
+        self.tabs.resize(450 * min(4, count), 450 * min(2, (count-1)//4 + 1))
+        self.sorting_tab.resize(450 * min(4, count), 450 * min(2, (count-1)//4 + 1))
         self.tabs.setCurrentIndex(1)
         self.sorting_tab.rendering_type = rendering_type
         self.sorting_tab.rainbow = rainbow

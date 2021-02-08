@@ -39,7 +39,12 @@ def list_to_bar_graph(lst, coloring, padding=0, size=384, rainbow=False, color_m
     for i, color in coloring.items():
         num = lst.getitem_no_count(i)
         x = i*(bar_width+padding)+1
-        draw.rectangle((x,size, x + bar_width * skip_index, size-y_step_size*num), fill= color_map[color])
+        if rainbow:
+            color = colorsys.hsv_to_rgb(hue_delta*num, 0.8, 0.7)
+            color = (math.floor(color[0]*255), math.floor(color[1]*255), math.floor(color[2]*255))
+            draw.rectangle((x,size, x + bar_width*skip_index, size-y_step_size*num), fill= color)
+        else:
+            draw.rectangle((x,size, x + bar_width * skip_index, size-y_step_size*num), fill= color_map[color])
 
     return QImage(image.tobytes("raw","RGB"), image.size[0], image.size[1], QImage.Format_RGB888)
 
