@@ -40,10 +40,11 @@ class SortingAlgorithm():
         #return round((lhs + rhs) / 2)
         return lhs
 
-    def requires_rendering(self):
+    def requires_rendering(self, skip_bool_switch=False):
         if self.sorting_active: 
             # This is to ensure the last frame when the thread is complete is still rendered
-            self.sorting_active = self.thread.is_alive()
+            if (not skip_bool_switch):
+                self.sorting_active = self.thread.is_alive()
             return True
         else:
             return False

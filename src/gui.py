@@ -188,7 +188,7 @@ class SortingTab(QWidget):
 
     def playSound(self, sorting_algo):
         """ Play a sound based on the last comparison. This is done using 64 different cached sound files """
-        if not self.is_sound_playing() and sorting_algo.requires_rendering() and not self.first_frame:
+        if not self.is_sound_playing() and sorting_algo.requires_rendering(True) and not self.first_frame:
             value = sorting_algo.get_sound_index()
             sound_index = round((value / sorting_algo.lst.max) * 63)
             self.sounds[sound_index].play()
