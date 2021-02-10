@@ -2,7 +2,7 @@
 
 from PIL.ImageQt import ImageQt
 from PyQt5.QtCore import pyqtSignal, Qt, QTimer
-from PyQt5.QtWidgets import QWidget, QApplication, QStackedWidget, QCheckBox, QSpacerItem, QLabel, QComboBox, QHBoxLayout, QVBoxLayout, QPushButton, QFrame, QGridLayout, QAction, QSizePolicy
+from PyQt5.QtWidgets import QMainWindow, QWidget, QApplication, QLayout, QStackedWidget, QCheckBox, QSpacerItem, QLabel, QComboBox, QHBoxLayout, QVBoxLayout, QPushButton, QFrame, QGridLayout, QAction, QSizePolicy
 from PyQt5.QtGui import QIcon, QPixmap, QFont, QImage, QFontDatabase
 from PyQt5.QtMultimedia import QSound, QSoundEffect
 from PyQt5 import QtCore
@@ -21,9 +21,11 @@ SortRenderType = Enum("SortingRenderingType", "BarGraph PointGraph PointSpiral P
 
 class SortingWidget(QWidget):
     """ A widget displaying a sorting algorithm and related info """
-    def __init__(self, parent, sorting_algo):
+    def __init__(self, parent, sorting_algo, image_size=384):
         super(SortingWidget, self).__init__(parent)
         self.sorting_algo = sorting_algo
+        self.image_size = image_size
+
         self.layout = QVBoxLayout(self)
         self.layout.addStretch(1)
         self.layout.setContentsMargins(10,0,10,0)
@@ -39,7 +41,7 @@ class SortingWidget(QWidget):
         # Sorting bitmap
         self.image_label = QLabel(self)
         self.image_label.setAlignment(QtCore.Qt.AlignCenter)
-        self.image_label.setMinimumSize(384, 384)
+        self.image_label.setMinimumSize(self.image_size, self.image_size)
 
         self.layout.addWidget(self.name_label)
         self.layout.addWidget(self.metadata_label)
@@ -56,18 +58,17 @@ class SortingWidget(QWidget):
         """ Generate an image of a sorting list """
         if self.sorting_algo.requires_rendering(): # No point in rendering if not needed
             # Render image
-            size = 384
             q_image = None
             if rendering_type == SortRenderType.BarGraph:
-                q_image = visualizer.list_to_bar_graph(self.sorting_algo.lst, self.sorting_algo.get_coloring(), padding=3, size=size, rainbow=rainbow)
+                q_image = visualizer.list_to_bar_graph(self.sorting_algo.lst, self.sorting_algo.get_coloring(), padding=3, size=self.image_size, rainbow=rainbow)
             elif rendering_type == SortRenderType.PointGraph:
-                q_image = visualizer.list_to_point_graph(self.sorting_algo.lst, self.sorting_algo.get_coloring(), padding=3, size=size, rainbow=rainbow)
+                q_image = visualizer.list_to_point_graph(self.sorting_algo.lst, self.sorting_algo.get_coloring(), padding=3, size=self.image_size, rainbow=rainbow)
             elif rendering_type == SortRenderType.PointSpiral:
-                q_image = visualizer.list_to_point_spiral(self.sorting_algo.lst, self.sorting_algo.get_coloring(), padding=3, size=size, rainbow=rainbow)
+                q_image = visualizer.list_to_point_spiral(self.sorting_algo.lst, self.sorting_algo.get_coloring(), padding=3, size=self.image_size, rainbow=rainbow)
             elif rendering_type == SortRenderType.PointCircle:
-                q_image = visualizer.list_to_point_disparity(self.sorting_algo.lst, self.sorting_algo.get_coloring(), padding=3, size=size, rainbow=rainbow)
+                q_image = visualizer.list_to_point_disparity(self.sorting_algo.lst, self.sorting_algo.get_coloring(), padding=3, size=self.image_size, rainbow=rainbow)
             pixmap = QPixmap.fromImage(q_image)
-            pixmap = pixmap.scaled(size, size)
+            pixmap = pixmap.scaled(self.image_size, self.image_size)
             self.image_label.setPixmap(pixmap)
             # Update sorting metadata
             self.updateSortingMetadata()
@@ -96,17 +97,17 @@ class SortingTab(QWidget):
 
         # Setup sorting widgets
         self.layout = QGridLayout(self)
-        self.layout.setAlignment(Qt.AlignHCenter)
+        self.layout.setAlignment(Qt.AlignCenter)
 
         self.rendering_type = SortRenderType.BarGraph
         self.rainbow = False
 
-    def updateSortingAlgorithms(self, sorting_algos):
+    def updateSortingAlgorithms(self, sorting_algos, image_size):
         self.sorting_widgets = []
-
+        
         for i, algo in enumerate(sorting_algos):
-            sorting_widget = SortingWidget(self, algo)
-            self.layout.addWidget(sorting_widget, i // 4, i % 4)
+            sorting_widget = SortingWidget(self, algo, image_size)
+            self.layout.addWidget(sorting_widget, i // 4, i % 4, Qt.AlignCenter)
             self.sorting_widgets.append(sorting_widget)
 
         self.sorting_algos = sorting_algos
@@ -202,7 +203,7 @@ class SelectionTab(QWidget):
         self.main_window = main_window
         self.layout = QVBoxLayout(self)
         self.layout.setContentsMargins(10,10,10,10)
-        self.layout.setAlignment(Qt.AlignTop)
+        self.layout.setAlignment(Qt.AlignCenter)
 
 
         self.hlayout = QHBoxLayout()
@@ -329,9 +330,9 @@ class SelectionTab(QWidget):
         sorting_algos = [SortingAlgorithm(self.sorting_func_map[name], name, lst) for name in algo_names]
         self.main_window.switchToSorting(sorting_algos, element_count, rendering_type, rainbow, sound, lock_type)
 
-class MainWindow(QWidget):
+class MainWindow(QMainWindow):
     def __init__(self, sorting_func_map):
-        super(MainWindow, self).__init__()
+        super().__init__()
 
         self.setWindowTitle('Sorting Algorithms Visualized')
         self.setStyleSheet("background-color: #181818; color: white")
@@ -342,6 +343,8 @@ class MainWindow(QWidget):
 
         # Setup window tabs
         self.tabs = QStackedWidget(self)
+        self.setCentralWidget(self.tabs)
+
         self.selection_tab = SelectionTab(self.tabs, sorting_func_map, self)
         self.sorting_tab = SortingTab(self.tabs)
 
@@ -351,20 +354,19 @@ class MainWindow(QWidget):
         self.tabs.setCurrentIndex(0)
         self.tabs.currentWidget().setFocus()
 
-        self.resize(500, 440)
-        self.selection_tab.resize(500, 440)
-
     def switchToSorting(self, sorting_algos, element_count, rendering_type, rainbow, sound, lock_type):
         count = max(1, len(sorting_algos))
-        self.resize(450 * min(4, count), 450 * min(2, (count-1)//4 + 1))
-        self.tabs.resize(450 * min(4, count), 450 * min(2, (count-1)//4 + 1))
-        self.sorting_tab.resize(450 * min(4, count), 450 * min(2, (count-1)//4 + 1))
+        # Setup correct window size
+        image_size = 384
+        if len(sorting_algos) <= 2:
+            image_size = 384*2
+
         self.tabs.setCurrentIndex(1)
         self.sorting_tab.rendering_type = rendering_type
         self.sorting_tab.rainbow = rainbow
         self.sorting_tab.sound_enabled = sound
         special_types.ThreadManagment.lock_type = lock_type
-        self.sorting_tab.updateSortingAlgorithms(sorting_algos)
+        self.sorting_tab.updateSortingAlgorithms(sorting_algos, image_size)
         self.sorting_tab.startRendering()
 
 class MainApplication(QApplication):
