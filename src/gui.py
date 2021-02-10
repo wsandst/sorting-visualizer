@@ -315,6 +315,13 @@ class SelectionTab(QWidget):
         else:
             lst.randomize(element_count, element_count)
 
+        # Convert dropdown names to Sorting Algorithm objects. Filter out "None" options
+        algo_names = filter(lambda a: a != "None", [dropdown.currentText() for dropdown in self.sorting_selections])
+        sorting_algos = [SortingAlgorithm(self.sorting_func_map[name], name, lst) for name in algo_names]
+
+        if len(sorting_algos) == 0: # No point in starting with no sorting algorithms selected
+            return
+
         # Other attributes
         rendering_types_map = {"Bar Graph": SortRenderType.BarGraph, "Point Graph": SortRenderType.PointGraph, 
             "Point Spiral": SortRenderType.PointSpiral, "Point Circle": SortRenderType.PointCircle}
@@ -327,9 +334,6 @@ class SelectionTab(QWidget):
         sound = self.sound_checkbox.isChecked()
         lock_type = lock_types_map[self.lock_type_input.currentText()]
 
-        # Convert dropdown names to Sorting Algorithm objects. Filter out "None" options
-        algo_names = filter(lambda a: a != "None", [dropdown.currentText() for dropdown in self.sorting_selections])
-        sorting_algos = [SortingAlgorithm(self.sorting_func_map[name], name, lst) for name in algo_names]
         self.main_window.switchToSorting(sorting_algos, element_count, rendering_type, rainbow, sound, lock_type)
 
 class MainWindow(QMainWindow):
