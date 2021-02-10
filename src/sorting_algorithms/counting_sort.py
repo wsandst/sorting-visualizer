@@ -1,4 +1,7 @@
 
+sort_name = "Counting Sort"
+sort_func_name = "counting_sort"
+
 def counting_sort(lst):
     # Find max to determine table size
     max_val = max(lst)

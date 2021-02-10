@@ -1,12 +1,10 @@
 """ GUI Implementation for the project using Qt5 Python bindings """
 
 from PIL.ImageQt import ImageQt
-from PyQt5.QtCore import pyqtSignal, Qt, QTimer
-from PyQt5.QtWidgets import QMainWindow, QWidget, QApplication, QLayout, QStackedWidget, QCheckBox, QSpacerItem, QLabel, QComboBox, QHBoxLayout, QVBoxLayout, QPushButton, QFrame, QGridLayout, QAction, QSizePolicy
+from PyQt5.QtCore import pyqtSignal, Qt, QTimer, QUrl
+from PyQt5.QtWidgets import QMainWindow, QWidget, QApplication, QLayout, QStackedWidget, QCheckBox, QLabel, QComboBox, QHBoxLayout, QVBoxLayout, QPushButton, QFrame, QGridLayout, QAction, QSizePolicy
 from PyQt5.QtGui import QIcon, QPixmap, QFont, QImage, QFontDatabase
 from PyQt5.QtMultimedia import QSound, QSoundEffect
-from PyQt5 import QtCore
-from PyQt5 import QtMultimedia
 
 from enum import Enum
 import sys
@@ -32,16 +30,16 @@ class SortingWidget(QWidget):
 
         self.name_label = QLabel()
         self.name_label.setText(sorting_algo.name)
-        self.name_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.name_label.setAlignment(Qt.AlignCenter)
 
         self.metadata_label = QLabel()
         self.metadata_label.setText("comparisons: 0 reads: 0 writes: 0")
-        self.metadata_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.metadata_label.setAlignment(Qt.AlignCenter)
         self.metadata_label.setContentsMargins(0, 0, 0, 0)
 
         # Sorting bitmap
         self.image_label = QLabel(self)
-        self.image_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.image_label.setAlignment(Qt.AlignCenter)
         self.image_label.setMinimumSize(self.image_size, self.image_size)
 
         self.layout.addWidget(self.name_label)
@@ -91,7 +89,7 @@ class SortingTab(QWidget):
         self.sounds = []
         for i in range(64):
             sound = QSoundEffect()
-            sound.setSource(QtCore.QUrl.fromLocalFile(f"../assets/sounds/tone-{i}.wav"))
+            sound.setSource(QUrl.fromLocalFile(f"../assets/sounds/tone-{i}.wav"))
             sound.setVolume(0.3)
             self.sounds.append(sound)
 
@@ -125,7 +123,7 @@ class SortingTab(QWidget):
         self.frame_counter = 0
         self.last_frame = None
 
-        self.render_timer = QtCore.QTimer(self)
+        self.render_timer = QTimer(self)
         self.current_frame_time = 64
         self.sorting_speed_mult = 1
         self.render_timer.setInterval(self.current_frame_time) #~60 FPS

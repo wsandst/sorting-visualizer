@@ -1,3 +1,7 @@
+
+sort_name = "Heap Sort"
+sort_func_name = "heap_sort"
+
 def sift_down(lst, i, mx):
     if i*2+1 >= mx:
         return

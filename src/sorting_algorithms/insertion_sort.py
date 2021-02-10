@@ -1,4 +1,7 @@
 
+sort_name = "Insertion Sort"
+sort_func_name = "insertion_sort"
+
 def insertion_sort(lst):
     for j in range(1, len(lst)):
         key = lst[j]

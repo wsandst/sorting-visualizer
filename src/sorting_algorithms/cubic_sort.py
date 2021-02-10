@@ -1,4 +1,6 @@
 
+sort_name = "Cubic Sort"
+sort_func_name = "cubic_sort"
 
 def cubic_sort(v):
     """A generator that sorts v in place"""

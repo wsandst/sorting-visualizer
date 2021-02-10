@@ -1,4 +1,7 @@
 
+sort_name = "Merge Sort"
+sort_func_name = "merge_sort"
+
 def merge_sort(lst):
     divide(lst, 0, len(lst)-1)
 

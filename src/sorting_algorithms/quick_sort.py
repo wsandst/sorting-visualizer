@@ -1,4 +1,7 @@
 
+sort_name = "Quick Sort"
+sort_func_name = "quick_sort"
+
 def quick_sort(lst):
     partition(lst, 0, len(lst))
 

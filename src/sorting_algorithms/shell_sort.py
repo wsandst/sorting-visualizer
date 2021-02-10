@@ -1,5 +1,8 @@
 import math
 
+sort_name = "Shell Sort"
+sort_func_name = "shell_sort"
+
 def shell_sort(lst):
     gaps = [1750, 701, 301, 132, 57, 23, 10, 4, 1]
     for gap in gaps:

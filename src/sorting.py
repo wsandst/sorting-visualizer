@@ -13,7 +13,7 @@ class SortingAlgorithm():
     """
     def __init__(self, func, name, lst):
         self.lst = SList(lst)
-        self.thread = threading.Thread(target = sleep_then_run, args = (func, self.lst,))
+        self.thread = threading.Thread(target = sleep_then_run, args = (func, self.lst))
         self.thread.daemon = True
         self.name = name
         self.sorting_active = False

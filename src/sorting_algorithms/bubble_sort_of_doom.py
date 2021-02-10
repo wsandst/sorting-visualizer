@@ -1,4 +1,7 @@
 
+sort_name = "Bubble Sort of Doom"
+sort_func_name = "bubble_sort_of_doom"
+
 def bubble_sort_of_doom(lst):
     max_index = len(lst) - 1
     while max_index:

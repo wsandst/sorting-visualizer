@@ -9,6 +9,9 @@ import threading
 
 from functools import cmp_to_key
 
+sort_name = "Python TimSort"
+sort_func_name = "timsort"
+
 class TimBreak(Exception): pass
 
 # Avoiding globals

@@ -1,5 +1,8 @@
 import random
 
+sort_name = "Cocktail Sort"
+sort_func_name = "cocktail_sort"
+
 def _cocktail_up(lst, start, end):
     last_change = start
     sorting = False

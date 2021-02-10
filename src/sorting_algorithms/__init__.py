@@ -1,17 +1,4 @@
-from . import bubble_sort
-from . import insertion_sort
-from . import gnome_sort
-from . import selection_sort
-from . import merge_sort
-from . import bubble_sort_of_doom
-from . import cocktail_sort
-from . import py_timsort
-from . import quick_sort
-from . import heap_sort
-from . import bogo_sort
-from . import bogo_sort_of_doom
-from . import shell_sort
-from . import comb_sort
-from . import counting_sort
-from . import radix_lsd_sort
-from . import cubic_sort
+from os.path import dirname, basename, isfile, join
+import glob
+modules = glob.glob(join(dirname(__file__), "*.py"))
+__all__ = [ basename(f)[:-3] for f in modules if isfile(f) and not f.endswith('__init__.py')]

@@ -1,6 +1,9 @@
 
 import math
 
+sort_name = "Radix Sort"
+sort_func_name = "radix_lsd_sort"
+
 def get_digit(num, base, digit):
     return int((num / pow(base, digit)) % base)
 

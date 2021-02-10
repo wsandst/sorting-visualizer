@@ -1,6 +1,9 @@
 
 import random
 
+sort_name = "Bogo Sort"
+sort_func_name = "bogo_sort"
+
 def bogo_sort(lst):
     sorted_list = [int(i) for i in lst.copy()]
     sorted_list.sort()

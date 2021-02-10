@@ -1,4 +1,7 @@
 
+sort_name = "Selection Sort"
+sort_func_name = "selection_sort"
+
 def selection_sort(lst):
     index = 0
     for i in range(len(lst)):

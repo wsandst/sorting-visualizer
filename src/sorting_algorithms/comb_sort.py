@@ -1,5 +1,8 @@
 import math
 
+sort_name = "Comb Sort"
+sort_func_name = "comb_sort"
+
 def comb_sort(lst):
     gap = len(lst)
     shrink_factor = 1.3

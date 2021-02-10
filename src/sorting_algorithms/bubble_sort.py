@@ -1,4 +1,7 @@
 
+sort_name = "Bubble Sort"
+sort_func_name = "bubble_sort"
+
 def bubble_sort(lst):
     sorting = True
     for j in range(len(lst) - 1, -1, -1):
