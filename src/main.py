@@ -11,7 +11,6 @@ def main():
     # Dynamically import all sorting algo files under sorting_algorithms/
     for sorting_mod in sorting_algorithms.__all__:
         mod = getattr(__import__(f"sorting_algorithms.{sorting_mod}"), sorting_mod)
-        print(dir(mod))
         sorting_func_map[mod.sort_name] = getattr(mod, mod.sort_func_name)
 
     # Lambda needed here due to special requirements
