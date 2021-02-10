@@ -6,7 +6,7 @@ def main():
     lst = SList()
     #lst.shuffle_linear(40)
     # Init all the sorting algorithms
-    sorting_func_map = {"None": 0}
+    sorting_func_map = {}
 
     # Naive
     sorting_func_map["Insertion Sort"] = insertion_sort.insertion_sort
@@ -35,7 +35,11 @@ def main():
     sorting_func_map["Bogo Sort"] = bogo_sort.bogo_sort
     sorting_func_map["Cubic Sort"] = cubic_sort.cubic_sort
 
-    application = gui.MainApplication(sorting_func_map)
+    # Sort dict alphabetically, None at top. Python3 dicts are ordered
+    sorting_func_map_sorted = {"None": 0}
+    sorting_func_map_sorted.update(dict(sorted(sorting_func_map.items())))
+
+    application = gui.MainApplication(sorting_func_map_sorted)
     
 if __name__ == "__main__":
     main()

@@ -37,6 +37,7 @@ class SortingWidget(QWidget):
         self.metadata_label = QLabel()
         self.metadata_label.setText("comparisons: 0 reads: 0 writes: 0")
         self.metadata_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.metadata_label.setContentsMargins(0, 0, 0, 0)
 
         # Sorting bitmap
         self.image_label = QLabel(self)
@@ -49,7 +50,8 @@ class SortingWidget(QWidget):
 
         # Setup correct fonts
         medium_font = QFont("Inter", 12)
-        small_font = QFont("Inter", 10)
+        # Monospaced
+        small_font = QFont("Source Code Pro", 10)
         self.name_label.setFont(medium_font)
         self.metadata_label.setFont(small_font)
 
@@ -75,7 +77,7 @@ class SortingWidget(QWidget):
             self.update()
 
     def updateSortingMetadata(self):
-        new_text = f'cmps: {self.sorting_algo.get_comparisons()} \t reads: {self.sorting_algo.get_reads()} \t writes: {self.sorting_algo.get_writes()}'
+        new_text = f'cmps: {self.sorting_algo.get_comparisons():<7} reads: {self.sorting_algo.get_reads():<7} writes: {self.sorting_algo.get_writes():<7}'
         self.metadata_label.setText(new_text)
 
 
@@ -104,7 +106,7 @@ class SortingTab(QWidget):
 
     def updateSortingAlgorithms(self, sorting_algos, image_size):
         self.sorting_widgets = []
-        
+
         for i, algo in enumerate(sorting_algos):
             sorting_widget = SortingWidget(self, algo, image_size)
             self.layout.addWidget(sorting_widget, i // 4, i % 4, Qt.AlignCenter)
@@ -189,7 +191,7 @@ class SortingTab(QWidget):
 
     def playSound(self, sorting_algo):
         """ Play a sound based on the last comparison. This is done using 64 different cached sound files """
-        if not self.is_sound_playing() and sorting_algo.requires_rendering(True) and not self.first_frame:
+        if sorting_algo.requires_rendering(True) and not self.first_frame:
             value = sorting_algo.get_sound_index()
             sound_index = round((value / sorting_algo.lst.max) * 63)
             self.sounds[sound_index].play()
@@ -337,10 +339,6 @@ class MainWindow(QMainWindow):
         self.setWindowTitle('Sorting Algorithms Visualized')
         self.setStyleSheet("background-color: #181818; color: white")
 
-        # Setup custom font
-        font_db = QFontDatabase()
-        font_id = font_db.addApplicationFont("../assets/fonts/Inter-Regular.ttf")
-
         # Setup window tabs
         self.tabs = QStackedWidget(self)
         self.setCentralWidget(self.tabs)
@@ -372,6 +370,16 @@ class MainWindow(QMainWindow):
 class MainApplication(QApplication):
     def __init__(self, sorting_func_map):
         super().__init__([])
+
+        # Load custom fonts
+        font_db = QFontDatabase()
+        font_db.addApplicationFont("../assets/fonts/Inter-Regular.ttf")
+        font_db.addApplicationFont("../assets/fonts/SourceCodePro-Regular.ttf")
+
+        # Set default font to Iter
+        font = QFont("Iter")
+        font.setPointSize(10)
+        self.setFont(font)
 
         window = MainWindow(sorting_func_map)
         window.show()
