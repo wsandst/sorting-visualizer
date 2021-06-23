@@ -13,13 +13,14 @@ def main():
         mod = getattr(__import__(f"sorting_algorithms.{sorting_mod}"), sorting_mod)
         sorting_func_map[mod.sort_name] = getattr(mod, mod.sort_func_name)
 
-    # Lambda needed here due to special requirements
+    # Lambda needed here due to special requirements for Timsort
     sorting_func_map["Python TimSort"] = (lambda x: sorting_algorithms.py_timsort.timsort(x, ThreadManagment))
 
     # Sort dict alphabetically, None at top. Python3 dicts are ordered
     sorting_func_map_sorted = {"None": 0}
     sorting_func_map_sorted.update(dict(sorted(sorting_func_map.items())))
 
+    # Create QT5 Window
     application = gui.MainApplication(sorting_func_map_sorted)
     
 if __name__ == "__main__":

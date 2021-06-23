@@ -3,6 +3,8 @@ This program visualizes various sorting algorithms graphically and keeps track o
 The implementation allows for easy addition for additional algorithms. The background code visualizing the sorting
 is completely invisible to the programmer of the sorting algorithm, which means that you can plug in a completely normal sorting code and it will be visualized without any extra work.
 
+# [Video showcase](https://www.youtube.com/watch?v=cTGH0TSF7Y4)
+
 ## Implemented Algorithms
 * Bubble Sort
 * Insertion Sort

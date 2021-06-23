@@ -1,7 +1,7 @@
 """ 
 Implements a custom Int and List class which keeps track of various usage statistics related to sorting
 The implementation is quite ugly, but by using these custom classes instead of Pythons own Int
-we can completely track and display a sorting algorithm function which written identical to a native
+we can completely track and display a sorting algorithm function which is written identical to a native
 implementation, without messy yields and such.
 Every sorting algorithm is on its own thread and can be locked by the user "invisible" cmp function.
 """
@@ -19,6 +19,7 @@ LockType = Enum("LockType", "Comparisons Writes Both")
 
 # Avoiding globals
 class ThreadManagment:
+    """ This global class is responsible for communication between threads """
     thread_locks = dict()
     cmp_lock_counter = 0
     read_lock_counter = 0
@@ -29,6 +30,7 @@ class ThreadManagment:
     sort_data_by_thread = dict()
 
 def sleep_if_needed():
+    """ Lock the thread if the sorting has exceeded the rendering condition (past certain cmps etc) """
     lock = False
     if ThreadManagment.lock_type == LockType.Comparisons: # Lock by cmps
         if ThreadManagment.cmp_lock_counter >= ThreadManagment.cmp_before_lock:
@@ -100,6 +102,7 @@ class SList(list):
         super().__init__(*args, **kwargs)
     
     def __getitem__(self, key):
+        """ Keep track of list reads """
         ThreadManagment.sort_data_by_thread[threading.get_ident()].read_cnt += 1
         ThreadManagment.read_lock_counter += 1
         sleep_if_needed()
@@ -116,6 +119,7 @@ class SList(list):
         return super().__getitem__(key)
 
     def __setitem__(self, key, value):
+        """ Keep track of list writes """
         ThreadManagment.sort_data_by_thread[threading.get_ident()].write_cnt += 1
         ThreadManagment.write_lock_counter += 1
         sleep_if_needed()

@@ -1,4 +1,3 @@
-
 sort_name = "Heap Sort"
 sort_func_name = "heap_sort"
 

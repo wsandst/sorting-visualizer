@@ -1,3 +1,8 @@
+""" 
+Functions for drawing different types of visualizations of Sorting Algoritms.
+This is done using PIL ImageDraw.
+"""
+
 
 from PIL import Image, ImageDraw, ImageFont
 from PyQt5.QtGui import QImage
@@ -187,8 +192,8 @@ def list_to_point_disparity(lst, coloring, padding=0, size=384, rainbow=True, co
         if rainbow:
             color = colorsys.hsv_to_rgb(hue_delta*num, 0.6, 0.6)
             color = (math.floor(color[0]*255), math.floor(color[1]*255), math.floor(color[2]*255))
-            draw.rectangle((x, y, x + 1, y + 1), fill= color)
+            draw.rectangle((x, y, x + 2, y + 2), fill= color)
         else:
-            draw.rectangle((x, y, x + 1, y + 1), fill= color_map[color])
+            draw.rectangle((x, y, x + 2, y + 2), fill= color_map[color])
 
     return QImage(image.tobytes("raw","RGB"), image.size[0], image.size[1], QImage.Format_RGB888)

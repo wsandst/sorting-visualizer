@@ -17,6 +17,9 @@ from sorting import SortingAlgorithm
 
 SortRenderType = Enum("SortingRenderingType", "BarGraph PointGraph PointSpiral PointCircle")
 
+GRID_HEIGHT = 4
+GRID_WIDTH = 4
+
 class SortingWidget(QWidget):
     """ A widget displaying a sorting algorithm and related info """
     def __init__(self, parent, sorting_algo, image_size=384):
@@ -107,7 +110,7 @@ class SortingTab(QWidget):
 
         for i, algo in enumerate(sorting_algos):
             sorting_widget = SortingWidget(self, algo, image_size)
-            self.layout.addWidget(sorting_widget, i // 4, i % 4, Qt.AlignCenter)
+            self.layout.addWidget(sorting_widget, i // GRID_HEIGHT, i % GRID_WIDTH, Qt.AlignCenter)
             self.sorting_widgets.append(sorting_widget)
 
         self.sorting_algos = sorting_algos
@@ -247,7 +250,7 @@ class SelectionTab(QWidget):
 
         self.element_count_input = QComboBox(self)
         self.element_count_input.setMinimumWidth(150)
-        powers_of_two = [str(2**x) for x in range(3, 12)]
+        powers_of_two = [str(2**x) for x in range(3, 13)]
         self.element_count_input.addItems(powers_of_two)
         self.element_count_input.setCurrentText("64")
         self.vlayout2.addWidget(self.element_count_input)

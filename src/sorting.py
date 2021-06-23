@@ -4,6 +4,7 @@ from special_types import SInt, SList, ThreadManagment
 import threading, time
 
 def sleep_then_run(func, lst):
+    # This sleep improves multithreaded performance by releasing the GIL
     time.sleep(0.05)
     func(lst)
 
@@ -20,6 +21,7 @@ class SortingAlgorithm():
         self.sorted_lst = sorted([int(i) for i in self.lst])
 
     def run(self):
+        """ Start the thread and start sorting """
         self.thread.start()
         special_types.ThreadManagment.sort_data_by_thread[self.thread.ident] = special_types.SortingMetadata()
         self.sorting_active = True
@@ -34,6 +36,7 @@ class SortingAlgorithm():
         return ThreadManagment.sort_data_by_thread[self.thread.ident].write_cnt
 
     def get_sound_index(self):
+        """ Return which the index which the sound effect should be based on """
         # Return difference between the two last compared elements
         lhs = ThreadManagment.sort_data_by_thread[self.thread.ident].last_cmp_left
         #rhs = ThreadManagment.last_cmp_right_by_thread.get(self.thread.ident, 0)
@@ -41,6 +44,7 @@ class SortingAlgorithm():
         return lhs
 
     def requires_rendering(self, skip_bool_switch=False):
+        """ Does this sorting thread require rendering? """
         if self.sorting_active: 
             # This is to ensure the last frame when the thread is complete is still rendered
             if (not skip_bool_switch):
@@ -50,6 +54,7 @@ class SortingAlgorithm():
             return False
 
     def is_thread_locked(self):
+        """ Is the thread locked (no longer sorting)?"""
         if self.thread.ident in ThreadManagment.thread_locks:
             return ThreadManagment.thread_locks[self.thread.ident]
         else:
@@ -59,7 +64,7 @@ class SortingAlgorithm():
         ThreadManagment.thread_locks[self.thread.ident] = False
 
     def get_coloring(self):
-        """ Return an array representing coloring of specific indices """
+        """ Return an array representing coloring of specific element indices """
         colors = dict()
         colors[-1] = 0
         if not self.sorting_active: # Don't want any normal colors on the last frame
