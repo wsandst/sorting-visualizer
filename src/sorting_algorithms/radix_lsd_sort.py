@@ -1,7 +1,9 @@
 
 import math
 
-sort_name = "Radix Sort"
+base = 8
+
+sort_name = f"LSD Radix Base {base} Sort"
 sort_func_name = "radix_lsd_sort"
 
 def get_digit(num, base, digit):
@@ -33,7 +35,7 @@ def lsd_sort(lst, base, digit):
     return lst_buffer
 
 def radix_lsd_sort(lst):
-    base = 2
+    global base
     mx = max(lst)
 
     digits = math.floor(math.log(mx, base))

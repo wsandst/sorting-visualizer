@@ -23,8 +23,9 @@ is completely invisible to the programmer of the sorting algorithm, which means 
 * Cubic Sort, O(n^3)
 
 ## Dependencies (Python 3):  
-**Pillow** - Image handling `pip3 install pillow`  
-**PyQT5** - GUI library `pip3 install PyQt5`  
+**Pillow** - Image handling  
+**PyQT5** - GUI library  
+Install the dependencies with `pip3 install -r requirements.txt`  
 To run the program, `./RUN.sh`
 
 ## Key bindings
